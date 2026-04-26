@@ -1,0 +1,21 @@
+Core functionality (p0-p1)
+Task List:​
+
+Create/remove/edit a task in the task list (p0)​
+
+Long term goals (made up of tasks):​
+
+Create/remove/edit long term goal in the goals list (p0)​
+
+Calendar:​
+
+Show monthly, daily layout of your events (p0)​
+
+Adding/Removing a calendar event/reminder (p1)​
+
+Recommender:​
+
+Recommends a task when you ask (p1)
+
+
+

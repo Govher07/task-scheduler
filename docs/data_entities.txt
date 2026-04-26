@@ -1,0 +1,49 @@
+Task (in the Task List) e.g Go to the gym ​
+
+Task name (Go to the gym)​
+
+Task group (Get healthier)​
+
+Deadline/Urgency​
+
+Start/End time, Duration​
+
+Priority​
+
+Effort/Energy required
+
+
+--------------------------------------------
+Event (wrapper over task)
+like: Event(Task Object, Event Name, Scheduled day/time)
+Event (shown in MyCalendar) ​
+
+
+Event Name – daily gym session​
+Task – Go to the gym​
+Time: 7-8pm​
+Repeating: every day
+
+----------------------------------------------------------
+Task groups/long term goals
+List of Tasks by category
+
+
+
+
+-----------------------------------------------------
+Calendar groups?
+daily, weekly, monthly?
+I'm not sure how calendars handle data entities or if they even group things together by date
+-----------------------------------------------------
+UI Pages:
+
+'MyGoals' page on UI
+
+List of Tasks​ (including task groups/long term goals)
+Sortable by priority, deadline, or energy level
+
+
+---------------------------------------------------------------
+'MyCalendar' page on UI
+Monthly and daily calendar view options/tabs
