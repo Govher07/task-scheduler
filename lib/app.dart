@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/goals/screens/goals_screen.dart';
+import 'features/goals/screens/task_form_screen.dart';
+import 'features/goals/screens/goal_form_screen.dart';
 import 'features/calendar/screens/calendar_screen.dart';
 import 'features/recommender/screens/recommender_screen.dart';
 
@@ -35,6 +37,26 @@ final router = GoRouter(
           ),
         ),
       ],
+    ),
+    GoRoute(
+      path: '/goals/task/new',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const TaskFormScreen(),
+    ),
+    GoRoute(
+      path: '/goals/task/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => TaskFormScreen(taskId: state.pathParameters['id']),
+    ),
+    GoRoute(
+      path: '/goals/goal/new',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const GoalFormScreen(),
+    ),
+    GoRoute(
+      path: '/goals/goal/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => GoalFormScreen(goalId: state.pathParameters['id']),
     ),
   ],
 );

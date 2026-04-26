@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/models/enums.dart';
 import '../../../core/providers.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -92,7 +93,7 @@ class GoalsScreen extends ConsumerWidget {
               title: const Text('New Goal'),
               onTap: () {
                 Navigator.pop(context);
-                // Navigation will be wired in Task 10
+                _createGoal(context);
               },
             ),
             ListTile(
@@ -100,7 +101,7 @@ class GoalsScreen extends ConsumerWidget {
               title: const Text('New Task'),
               onTap: () {
                 Navigator.pop(context);
-                // Navigation will be wired in Task 10
+                _createTask(context);
               },
             ),
           ],
@@ -109,12 +110,20 @@ class GoalsScreen extends ConsumerWidget {
     );
   }
 
+  void _createGoal(BuildContext context) {
+    context.push('/goals/goal/new');
+  }
+
+  void _createTask(BuildContext context) {
+    context.push('/goals/task/new');
+  }
+
   void _editGoal(BuildContext context, String goalId) {
-    // Navigation will be wired in Task 10
+    context.push('/goals/goal/$goalId');
   }
 
   void _editTask(BuildContext context, String taskId) {
-    // Navigation will be wired in Task 10
+    context.push('/goals/task/$taskId');
   }
 
   void _deleteTask(WidgetRef ref, String taskId) {
