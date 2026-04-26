@@ -5,6 +5,7 @@ import 'features/goals/screens/goals_screen.dart';
 import 'features/goals/screens/task_form_screen.dart';
 import 'features/goals/screens/goal_form_screen.dart';
 import 'features/calendar/screens/calendar_screen.dart';
+import 'features/calendar/screens/event_form_screen.dart';
 import 'features/recommender/screens/recommender_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -57,6 +58,16 @@ final router = GoRouter(
       path: '/goals/goal/:id',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => GoalFormScreen(goalId: state.pathParameters['id']),
+    ),
+    GoRoute(
+      path: '/calendar/event/new',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const EventFormScreen(),
+    ),
+    GoRoute(
+      path: '/calendar/event/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => EventFormScreen(eventId: state.pathParameters['id']),
     ),
   ],
 );
