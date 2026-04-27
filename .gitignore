@@ -48,3 +48,4 @@ app.*.map.json
 .claude/
 .superpowers/
 docs/superpowers/
+docs/plan.txt

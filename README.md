@@ -29,7 +29,7 @@ A Flutter app for tracking long-term goals, daily tasks, and scheduled events on
 1. **Clone the repo**
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/task-scheduler.git
+   git clone https://github.com/gwenbayar/task-scheduler.git
    cd task-scheduler
    ```
 

@@ -32,9 +32,8 @@ List of Tasks by category
 
 
 -----------------------------------------------------
-Calendar groups?
-daily, weekly, monthly?
-I'm not sure how calendars handle data entities or if they even group things together by date
+Calendar groups
+daily, weekly, monthly
 -----------------------------------------------------
 UI Pages:
 
