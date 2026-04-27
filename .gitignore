@@ -43,9 +43,3 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-
-# AI tooling artifacts
-.claude/
-.superpowers/
-docs/superpowers/
-docs/plan.txt
