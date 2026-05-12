@@ -48,6 +48,28 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, Goal> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _starttimeMeta = const VerificationMeta(
+    'starttime',
+  );
+  @override
+  late final GeneratedColumn<DateTime> starttime = GeneratedColumn<DateTime>(
+    'starttime',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deadlineMeta = const VerificationMeta(
+    'deadline',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deadline = GeneratedColumn<DateTime>(
+    'deadline',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -76,6 +98,8 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, Goal> {
     name,
     type,
     description,
+    starttime,
+    deadline,
     createdAt,
     updatedAt,
   ];
@@ -119,6 +143,18 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, Goal> {
         ),
       );
     }
+    if (data.containsKey('starttime')) {
+      context.handle(
+        _starttimeMeta,
+        starttime.isAcceptableOrUnknown(data['starttime']!, _starttimeMeta),
+      );
+    }
+    if (data.containsKey('deadline')) {
+      context.handle(
+        _deadlineMeta,
+        deadline.isAcceptableOrUnknown(data['deadline']!, _deadlineMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -160,6 +196,14 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, Goal> {
         DriftSqlType.string,
         data['${effectivePrefix}description'],
       ),
+      starttime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}starttime'],
+      ),
+      deadline: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deadline'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -182,6 +226,8 @@ class Goal extends DataClass implements Insertable<Goal> {
   final String name;
   final int type;
   final String? description;
+  final DateTime? starttime;
+  final DateTime? deadline;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Goal({
@@ -189,6 +235,8 @@ class Goal extends DataClass implements Insertable<Goal> {
     required this.name,
     required this.type,
     this.description,
+    this.starttime,
+    this.deadline,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -200,6 +248,12 @@ class Goal extends DataClass implements Insertable<Goal> {
     map['type'] = Variable<int>(type);
     if (!nullToAbsent || description != null) {
       map['description'] = Variable<String>(description);
+    }
+    if (!nullToAbsent || starttime != null) {
+      map['starttime'] = Variable<DateTime>(starttime);
+    }
+    if (!nullToAbsent || deadline != null) {
+      map['deadline'] = Variable<DateTime>(deadline);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -214,6 +268,12 @@ class Goal extends DataClass implements Insertable<Goal> {
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
+      starttime: starttime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(starttime),
+      deadline: deadline == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deadline),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -229,6 +289,8 @@ class Goal extends DataClass implements Insertable<Goal> {
       name: serializer.fromJson<String>(json['name']),
       type: serializer.fromJson<int>(json['type']),
       description: serializer.fromJson<String?>(json['description']),
+      starttime: serializer.fromJson<DateTime?>(json['starttime']),
+      deadline: serializer.fromJson<DateTime?>(json['deadline']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -241,6 +303,8 @@ class Goal extends DataClass implements Insertable<Goal> {
       'name': serializer.toJson<String>(name),
       'type': serializer.toJson<int>(type),
       'description': serializer.toJson<String?>(description),
+      'starttime': serializer.toJson<DateTime?>(starttime),
+      'deadline': serializer.toJson<DateTime?>(deadline),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -251,6 +315,8 @@ class Goal extends DataClass implements Insertable<Goal> {
     String? name,
     int? type,
     Value<String?> description = const Value.absent(),
+    Value<DateTime?> starttime = const Value.absent(),
+    Value<DateTime?> deadline = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Goal(
@@ -258,6 +324,8 @@ class Goal extends DataClass implements Insertable<Goal> {
     name: name ?? this.name,
     type: type ?? this.type,
     description: description.present ? description.value : this.description,
+    starttime: starttime.present ? starttime.value : this.starttime,
+    deadline: deadline.present ? deadline.value : this.deadline,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -269,6 +337,8 @@ class Goal extends DataClass implements Insertable<Goal> {
       description: data.description.present
           ? data.description.value
           : this.description,
+      starttime: data.starttime.present ? data.starttime.value : this.starttime,
+      deadline: data.deadline.present ? data.deadline.value : this.deadline,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -281,6 +351,8 @@ class Goal extends DataClass implements Insertable<Goal> {
           ..write('name: $name, ')
           ..write('type: $type, ')
           ..write('description: $description, ')
+          ..write('starttime: $starttime, ')
+          ..write('deadline: $deadline, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -288,8 +360,16 @@ class Goal extends DataClass implements Insertable<Goal> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, type, description, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    type,
+    description,
+    starttime,
+    deadline,
+    createdAt,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -298,6 +378,8 @@ class Goal extends DataClass implements Insertable<Goal> {
           other.name == this.name &&
           other.type == this.type &&
           other.description == this.description &&
+          other.starttime == this.starttime &&
+          other.deadline == this.deadline &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -307,6 +389,8 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
   final Value<String> name;
   final Value<int> type;
   final Value<String?> description;
+  final Value<DateTime?> starttime;
+  final Value<DateTime?> deadline;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -315,6 +399,8 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
     this.name = const Value.absent(),
     this.type = const Value.absent(),
     this.description = const Value.absent(),
+    this.starttime = const Value.absent(),
+    this.deadline = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -324,6 +410,8 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
     required String name,
     this.type = const Value.absent(),
     this.description = const Value.absent(),
+    this.starttime = const Value.absent(),
+    this.deadline = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -336,6 +424,8 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
     Expression<String>? name,
     Expression<int>? type,
     Expression<String>? description,
+    Expression<DateTime>? starttime,
+    Expression<DateTime>? deadline,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -345,6 +435,8 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
       if (name != null) 'name': name,
       if (type != null) 'type': type,
       if (description != null) 'description': description,
+      if (starttime != null) 'starttime': starttime,
+      if (deadline != null) 'deadline': deadline,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -356,6 +448,8 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
     Value<String>? name,
     Value<int>? type,
     Value<String?>? description,
+    Value<DateTime?>? starttime,
+    Value<DateTime?>? deadline,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -365,6 +459,8 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
       name: name ?? this.name,
       type: type ?? this.type,
       description: description ?? this.description,
+      starttime: starttime ?? this.starttime,
+      deadline: deadline ?? this.deadline,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -386,6 +482,12 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
     if (description.present) {
       map['description'] = Variable<String>(description.value);
     }
+    if (starttime.present) {
+      map['starttime'] = Variable<DateTime>(starttime.value);
+    }
+    if (deadline.present) {
+      map['deadline'] = Variable<DateTime>(deadline.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -405,6 +507,8 @@ class GoalsCompanion extends UpdateCompanion<Goal> {
           ..write('name: $name, ')
           ..write('type: $type, ')
           ..write('description: $description, ')
+          ..write('starttime: $starttime, ')
+          ..write('deadline: $deadline, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -460,6 +564,17 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _starttimeMeta = const VerificationMeta(
+    'starttime',
+  );
+  @override
+  late final GeneratedColumn<DateTime> starttime = GeneratedColumn<DateTime>(
+    'starttime',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _deadlineMeta = const VerificationMeta(
     'deadline',
@@ -533,6 +648,7 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     name,
     goalId,
     priority,
+    starttime,
     deadline,
     estimatedDurationMinutes,
     effortLevel,
@@ -575,6 +691,12 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
       context.handle(
         _priorityMeta,
         priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    if (data.containsKey('starttime')) {
+      context.handle(
+        _starttimeMeta,
+        starttime.isAcceptableOrUnknown(data['starttime']!, _starttimeMeta),
       );
     }
     if (data.containsKey('deadline')) {
@@ -648,6 +770,10 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         DriftSqlType.int,
         data['${effectivePrefix}priority'],
       )!,
+      starttime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}starttime'],
+      ),
       deadline: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}deadline'],
@@ -686,6 +812,7 @@ class Task extends DataClass implements Insertable<Task> {
   final String name;
   final String? goalId;
   final int priority;
+  final DateTime? starttime;
   final DateTime? deadline;
   final int? estimatedDurationMinutes;
   final int effortLevel;
@@ -697,6 +824,7 @@ class Task extends DataClass implements Insertable<Task> {
     required this.name,
     this.goalId,
     required this.priority,
+    this.starttime,
     this.deadline,
     this.estimatedDurationMinutes,
     required this.effortLevel,
@@ -713,6 +841,9 @@ class Task extends DataClass implements Insertable<Task> {
       map['goal_id'] = Variable<String>(goalId);
     }
     map['priority'] = Variable<int>(priority);
+    if (!nullToAbsent || starttime != null) {
+      map['starttime'] = Variable<DateTime>(starttime);
+    }
     if (!nullToAbsent || deadline != null) {
       map['deadline'] = Variable<DateTime>(deadline);
     }
@@ -736,6 +867,9 @@ class Task extends DataClass implements Insertable<Task> {
           ? const Value.absent()
           : Value(goalId),
       priority: Value(priority),
+      starttime: starttime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(starttime),
       deadline: deadline == null && nullToAbsent
           ? const Value.absent()
           : Value(deadline),
@@ -759,6 +893,7 @@ class Task extends DataClass implements Insertable<Task> {
       name: serializer.fromJson<String>(json['name']),
       goalId: serializer.fromJson<String?>(json['goalId']),
       priority: serializer.fromJson<int>(json['priority']),
+      starttime: serializer.fromJson<DateTime?>(json['starttime']),
       deadline: serializer.fromJson<DateTime?>(json['deadline']),
       estimatedDurationMinutes: serializer.fromJson<int?>(
         json['estimatedDurationMinutes'],
@@ -777,6 +912,7 @@ class Task extends DataClass implements Insertable<Task> {
       'name': serializer.toJson<String>(name),
       'goalId': serializer.toJson<String?>(goalId),
       'priority': serializer.toJson<int>(priority),
+      'starttime': serializer.toJson<DateTime?>(starttime),
       'deadline': serializer.toJson<DateTime?>(deadline),
       'estimatedDurationMinutes': serializer.toJson<int?>(
         estimatedDurationMinutes,
@@ -793,6 +929,7 @@ class Task extends DataClass implements Insertable<Task> {
     String? name,
     Value<String?> goalId = const Value.absent(),
     int? priority,
+    Value<DateTime?> starttime = const Value.absent(),
     Value<DateTime?> deadline = const Value.absent(),
     Value<int?> estimatedDurationMinutes = const Value.absent(),
     int? effortLevel,
@@ -804,6 +941,7 @@ class Task extends DataClass implements Insertable<Task> {
     name: name ?? this.name,
     goalId: goalId.present ? goalId.value : this.goalId,
     priority: priority ?? this.priority,
+    starttime: starttime.present ? starttime.value : this.starttime,
     deadline: deadline.present ? deadline.value : this.deadline,
     estimatedDurationMinutes: estimatedDurationMinutes.present
         ? estimatedDurationMinutes.value
@@ -819,6 +957,7 @@ class Task extends DataClass implements Insertable<Task> {
       name: data.name.present ? data.name.value : this.name,
       goalId: data.goalId.present ? data.goalId.value : this.goalId,
       priority: data.priority.present ? data.priority.value : this.priority,
+      starttime: data.starttime.present ? data.starttime.value : this.starttime,
       deadline: data.deadline.present ? data.deadline.value : this.deadline,
       estimatedDurationMinutes: data.estimatedDurationMinutes.present
           ? data.estimatedDurationMinutes.value
@@ -839,6 +978,7 @@ class Task extends DataClass implements Insertable<Task> {
           ..write('name: $name, ')
           ..write('goalId: $goalId, ')
           ..write('priority: $priority, ')
+          ..write('starttime: $starttime, ')
           ..write('deadline: $deadline, ')
           ..write('estimatedDurationMinutes: $estimatedDurationMinutes, ')
           ..write('effortLevel: $effortLevel, ')
@@ -855,6 +995,7 @@ class Task extends DataClass implements Insertable<Task> {
     name,
     goalId,
     priority,
+    starttime,
     deadline,
     estimatedDurationMinutes,
     effortLevel,
@@ -870,6 +1011,7 @@ class Task extends DataClass implements Insertable<Task> {
           other.name == this.name &&
           other.goalId == this.goalId &&
           other.priority == this.priority &&
+          other.starttime == this.starttime &&
           other.deadline == this.deadline &&
           other.estimatedDurationMinutes == this.estimatedDurationMinutes &&
           other.effortLevel == this.effortLevel &&
@@ -883,6 +1025,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
   final Value<String> name;
   final Value<String?> goalId;
   final Value<int> priority;
+  final Value<DateTime?> starttime;
   final Value<DateTime?> deadline;
   final Value<int?> estimatedDurationMinutes;
   final Value<int> effortLevel;
@@ -895,6 +1038,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.name = const Value.absent(),
     this.goalId = const Value.absent(),
     this.priority = const Value.absent(),
+    this.starttime = const Value.absent(),
     this.deadline = const Value.absent(),
     this.estimatedDurationMinutes = const Value.absent(),
     this.effortLevel = const Value.absent(),
@@ -908,6 +1052,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     required String name,
     this.goalId = const Value.absent(),
     this.priority = const Value.absent(),
+    this.starttime = const Value.absent(),
     this.deadline = const Value.absent(),
     this.estimatedDurationMinutes = const Value.absent(),
     this.effortLevel = const Value.absent(),
@@ -924,6 +1069,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Expression<String>? name,
     Expression<String>? goalId,
     Expression<int>? priority,
+    Expression<DateTime>? starttime,
     Expression<DateTime>? deadline,
     Expression<int>? estimatedDurationMinutes,
     Expression<int>? effortLevel,
@@ -937,6 +1083,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
       if (name != null) 'name': name,
       if (goalId != null) 'goal_id': goalId,
       if (priority != null) 'priority': priority,
+      if (starttime != null) 'starttime': starttime,
       if (deadline != null) 'deadline': deadline,
       if (estimatedDurationMinutes != null)
         'estimated_duration_minutes': estimatedDurationMinutes,
@@ -953,6 +1100,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Value<String>? name,
     Value<String?>? goalId,
     Value<int>? priority,
+    Value<DateTime?>? starttime,
     Value<DateTime?>? deadline,
     Value<int?>? estimatedDurationMinutes,
     Value<int>? effortLevel,
@@ -966,6 +1114,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
       name: name ?? this.name,
       goalId: goalId ?? this.goalId,
       priority: priority ?? this.priority,
+      starttime: starttime ?? this.starttime,
       deadline: deadline ?? this.deadline,
       estimatedDurationMinutes:
           estimatedDurationMinutes ?? this.estimatedDurationMinutes,
@@ -991,6 +1140,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
     }
     if (priority.present) {
       map['priority'] = Variable<int>(priority.value);
+    }
+    if (starttime.present) {
+      map['starttime'] = Variable<DateTime>(starttime.value);
     }
     if (deadline.present) {
       map['deadline'] = Variable<DateTime>(deadline.value);
@@ -1025,6 +1177,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
           ..write('name: $name, ')
           ..write('goalId: $goalId, ')
           ..write('priority: $priority, ')
+          ..write('starttime: $starttime, ')
           ..write('deadline: $deadline, ')
           ..write('estimatedDurationMinutes: $estimatedDurationMinutes, ')
           ..write('effortLevel: $effortLevel, ')
@@ -1630,6 +1783,8 @@ typedef $$GoalsTableCreateCompanionBuilder =
       required String name,
       Value<int> type,
       Value<String?> description,
+      Value<DateTime?> starttime,
+      Value<DateTime?> deadline,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -1640,6 +1795,8 @@ typedef $$GoalsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<int> type,
       Value<String?> description,
+      Value<DateTime?> starttime,
+      Value<DateTime?> deadline,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -1694,6 +1851,16 @@ class $$GoalsTableFilterComposer extends Composer<_$AppDatabase, $GoalsTable> {
 
   ColumnFilters<String> get description => $composableBuilder(
     column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get starttime => $composableBuilder(
+    column: $table.starttime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deadline => $composableBuilder(
+    column: $table.deadline,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1762,6 +1929,16 @@ class $$GoalsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get starttime => $composableBuilder(
+    column: $table.starttime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deadline => $composableBuilder(
+    column: $table.deadline,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -1795,6 +1972,12 @@ class $$GoalsTableAnnotationComposer
     column: $table.description,
     builder: (column) => column,
   );
+
+  GeneratedColumn<DateTime> get starttime =>
+      $composableBuilder(column: $table.starttime, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deadline =>
+      $composableBuilder(column: $table.deadline, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -1860,6 +2043,8 @@ class $$GoalsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<int> type = const Value.absent(),
                 Value<String?> description = const Value.absent(),
+                Value<DateTime?> starttime = const Value.absent(),
+                Value<DateTime?> deadline = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -1868,6 +2053,8 @@ class $$GoalsTableTableManager
                 name: name,
                 type: type,
                 description: description,
+                starttime: starttime,
+                deadline: deadline,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -1878,6 +2065,8 @@ class $$GoalsTableTableManager
                 required String name,
                 Value<int> type = const Value.absent(),
                 Value<String?> description = const Value.absent(),
+                Value<DateTime?> starttime = const Value.absent(),
+                Value<DateTime?> deadline = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -1886,6 +2075,8 @@ class $$GoalsTableTableManager
                 name: name,
                 type: type,
                 description: description,
+                starttime: starttime,
+                deadline: deadline,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -1943,6 +2134,7 @@ typedef $$TasksTableCreateCompanionBuilder =
       required String name,
       Value<String?> goalId,
       Value<int> priority,
+      Value<DateTime?> starttime,
       Value<DateTime?> deadline,
       Value<int?> estimatedDurationMinutes,
       Value<int> effortLevel,
@@ -1957,6 +2149,7 @@ typedef $$TasksTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String?> goalId,
       Value<int> priority,
+      Value<DateTime?> starttime,
       Value<DateTime?> deadline,
       Value<int?> estimatedDurationMinutes,
       Value<int> effortLevel,
@@ -2027,6 +2220,11 @@ class $$TasksTableFilterComposer extends Composer<_$AppDatabase, $TasksTable> {
 
   ColumnFilters<int> get priority => $composableBuilder(
     column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get starttime => $composableBuilder(
+    column: $table.starttime,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2133,6 +2331,11 @@ class $$TasksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get starttime => $composableBuilder(
+    column: $table.starttime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get deadline => $composableBuilder(
     column: $table.deadline,
     builder: (column) => ColumnOrderings(column),
@@ -2204,6 +2407,9 @@ class $$TasksTableAnnotationComposer
 
   GeneratedColumn<int> get priority =>
       $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get starttime =>
+      $composableBuilder(column: $table.starttime, builder: (column) => column);
 
   GeneratedColumn<DateTime> get deadline =>
       $composableBuilder(column: $table.deadline, builder: (column) => column);
@@ -2308,6 +2514,7 @@ class $$TasksTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String?> goalId = const Value.absent(),
                 Value<int> priority = const Value.absent(),
+                Value<DateTime?> starttime = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
                 Value<int?> estimatedDurationMinutes = const Value.absent(),
                 Value<int> effortLevel = const Value.absent(),
@@ -2320,6 +2527,7 @@ class $$TasksTableTableManager
                 name: name,
                 goalId: goalId,
                 priority: priority,
+                starttime: starttime,
                 deadline: deadline,
                 estimatedDurationMinutes: estimatedDurationMinutes,
                 effortLevel: effortLevel,
@@ -2334,6 +2542,7 @@ class $$TasksTableTableManager
                 required String name,
                 Value<String?> goalId = const Value.absent(),
                 Value<int> priority = const Value.absent(),
+                Value<DateTime?> starttime = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
                 Value<int?> estimatedDurationMinutes = const Value.absent(),
                 Value<int> effortLevel = const Value.absent(),
@@ -2346,6 +2555,7 @@ class $$TasksTableTableManager
                 name: name,
                 goalId: goalId,
                 priority: priority,
+                starttime: starttime,
                 deadline: deadline,
                 estimatedDurationMinutes: estimatedDurationMinutes,
                 effortLevel: effortLevel,

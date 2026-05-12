@@ -13,6 +13,9 @@ _$TaskImpl _$$TaskImplFromJson(Map<String, dynamic> json) => _$TaskImpl(
   priority:
       $enumDecodeNullable(_$PriorityEnumMap, json['priority']) ??
       Priority.medium,
+  starttime: json['starttime'] == null
+      ? null
+      : DateTime.parse(json['starttime'] as String),
   deadline: json['deadline'] == null
       ? null
       : DateTime.parse(json['deadline'] as String),
@@ -33,6 +36,7 @@ Map<String, dynamic> _$$TaskImplToJson(_$TaskImpl instance) =>
       'name': instance.name,
       'goalId': instance.goalId,
       'priority': _$PriorityEnumMap[instance.priority]!,
+      'starttime': instance.starttime?.toIso8601String(),
       'deadline': instance.deadline?.toIso8601String(),
       'estimatedDurationMinutes': instance.estimatedDurationMinutes,
       'effortLevel': _$EffortLevelEnumMap[instance.effortLevel]!,

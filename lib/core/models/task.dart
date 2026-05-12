@@ -11,6 +11,7 @@ class Task with _$Task {
     required String name,
     String? goalId,
     @Default(Priority.medium) Priority priority,
+    DateTime? starttime,
     DateTime? deadline,
     int? estimatedDurationMinutes,
     @Default(EffortLevel.medium) EffortLevel effortLevel,

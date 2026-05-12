@@ -11,6 +11,8 @@ class Goal with _$Goal {
     required String name,
     @Default(GoalType.completable) GoalType type,
     String? description,
+    DateTime? starttime,
+    DateTime? deadline,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Goal;

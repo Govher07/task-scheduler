@@ -23,6 +23,8 @@ class DriftGoalRepository implements GoalRepository {
       name: row.name,
       type: GoalType.values[row.type],
       description: row.description,
+      starttime: row.starttime,
+      deadline: row.deadline,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     );
@@ -34,6 +36,8 @@ class DriftGoalRepository implements GoalRepository {
       name: Value(goal.name),
       type: Value(goal.type.index),
       description: Value(goal.description),
+      starttime: Value(goal.starttime),
+      deadline: Value(goal.deadline),
       createdAt: Value(goal.createdAt),
       updatedAt: Value(goal.updatedAt),
     );

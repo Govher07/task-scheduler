@@ -14,6 +14,9 @@ class SupabaseTaskRepository implements TaskRepository {
       name: row['name'] as String,
       goalId: row['goal_id'] as String?,
       priority: Priority.values.byName(row['priority'] as String),
+      starttime: row['starttime'] != null
+          ? DateTime.parse(row['starttime'] as String)
+          : null,
       deadline: row['deadline'] != null
           ? DateTime.parse(row['deadline'] as String)
           : null,
@@ -31,6 +34,7 @@ class SupabaseTaskRepository implements TaskRepository {
       'name': task.name,
       'goal_id': task.goalId,
       'priority': task.priority.name,
+      'starttime': task.starttime?.toIso8601String(),
       'deadline': task.deadline?.toIso8601String(),
       'estimated_duration_minutes': task.estimatedDurationMinutes,
       'effort_level': task.effortLevel.name,
