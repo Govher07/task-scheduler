@@ -25,6 +25,7 @@ mixin _$Task {
   String get name => throw _privateConstructorUsedError;
   String? get goalId => throw _privateConstructorUsedError;
   Priority get priority => throw _privateConstructorUsedError;
+  DateTime? get starttime => throw _privateConstructorUsedError;
   DateTime? get deadline => throw _privateConstructorUsedError;
   int? get estimatedDurationMinutes => throw _privateConstructorUsedError;
   EffortLevel get effortLevel => throw _privateConstructorUsedError;
@@ -51,6 +52,7 @@ abstract class $TaskCopyWith<$Res> {
     String name,
     String? goalId,
     Priority priority,
+    DateTime? starttime,
     DateTime? deadline,
     int? estimatedDurationMinutes,
     EffortLevel effortLevel,
@@ -79,6 +81,7 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
     Object? name = null,
     Object? goalId = freezed,
     Object? priority = null,
+    Object? starttime = freezed,
     Object? deadline = freezed,
     Object? estimatedDurationMinutes = freezed,
     Object? effortLevel = null,
@@ -104,6 +107,10 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
                 ? _value.priority
                 : priority // ignore: cast_nullable_to_non_nullable
                       as Priority,
+            starttime: freezed == starttime
+                ? _value.starttime
+                : starttime // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
             deadline: freezed == deadline
                 ? _value.deadline
                 : deadline // ignore: cast_nullable_to_non_nullable
@@ -147,6 +154,7 @@ abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
     String name,
     String? goalId,
     Priority priority,
+    DateTime? starttime,
     DateTime? deadline,
     int? estimatedDurationMinutes,
     EffortLevel effortLevel,
@@ -172,6 +180,7 @@ class __$$TaskImplCopyWithImpl<$Res>
     Object? name = null,
     Object? goalId = freezed,
     Object? priority = null,
+    Object? starttime = freezed,
     Object? deadline = freezed,
     Object? estimatedDurationMinutes = freezed,
     Object? effortLevel = null,
@@ -197,6 +206,10 @@ class __$$TaskImplCopyWithImpl<$Res>
             ? _value.priority
             : priority // ignore: cast_nullable_to_non_nullable
                   as Priority,
+        starttime: freezed == starttime
+            ? _value.starttime
+            : starttime // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
         deadline: freezed == deadline
             ? _value.deadline
             : deadline // ignore: cast_nullable_to_non_nullable
@@ -234,6 +247,7 @@ class _$TaskImpl implements _Task {
     required this.name,
     this.goalId,
     this.priority = Priority.medium,
+    this.starttime,
     this.deadline,
     this.estimatedDurationMinutes,
     this.effortLevel = EffortLevel.medium,
@@ -255,6 +269,8 @@ class _$TaskImpl implements _Task {
   @JsonKey()
   final Priority priority;
   @override
+  final DateTime? starttime;
+  @override
   final DateTime? deadline;
   @override
   final int? estimatedDurationMinutes;
@@ -271,7 +287,7 @@ class _$TaskImpl implements _Task {
 
   @override
   String toString() {
-    return 'Task(id: $id, name: $name, goalId: $goalId, priority: $priority, deadline: $deadline, estimatedDurationMinutes: $estimatedDurationMinutes, effortLevel: $effortLevel, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Task(id: $id, name: $name, goalId: $goalId, priority: $priority, starttime: $starttime, deadline: $deadline, estimatedDurationMinutes: $estimatedDurationMinutes, effortLevel: $effortLevel, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -284,6 +300,8 @@ class _$TaskImpl implements _Task {
             (identical(other.goalId, goalId) || other.goalId == goalId) &&
             (identical(other.priority, priority) ||
                 other.priority == priority) &&
+            (identical(other.starttime, starttime) ||
+                other.starttime == starttime) &&
             (identical(other.deadline, deadline) ||
                 other.deadline == deadline) &&
             (identical(
@@ -308,6 +326,7 @@ class _$TaskImpl implements _Task {
     name,
     goalId,
     priority,
+    starttime,
     deadline,
     estimatedDurationMinutes,
     effortLevel,
@@ -336,6 +355,7 @@ abstract class _Task implements Task {
     required final String name,
     final String? goalId,
     final Priority priority,
+    final DateTime? starttime,
     final DateTime? deadline,
     final int? estimatedDurationMinutes,
     final EffortLevel effortLevel,
@@ -354,6 +374,8 @@ abstract class _Task implements Task {
   String? get goalId;
   @override
   Priority get priority;
+  @override
+  DateTime? get starttime;
   @override
   DateTime? get deadline;
   @override

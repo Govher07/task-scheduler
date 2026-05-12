@@ -13,6 +13,12 @@ _$GoalImpl _$$GoalImplFromJson(Map<String, dynamic> json) => _$GoalImpl(
       $enumDecodeNullable(_$GoalTypeEnumMap, json['type']) ??
       GoalType.completable,
   description: json['description'] as String?,
+  starttime: json['starttime'] == null
+      ? null
+      : DateTime.parse(json['starttime'] as String),
+  deadline: json['deadline'] == null
+      ? null
+      : DateTime.parse(json['deadline'] as String),
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),
 );
@@ -23,6 +29,8 @@ Map<String, dynamic> _$$GoalImplToJson(_$GoalImpl instance) =>
       'name': instance.name,
       'type': _$GoalTypeEnumMap[instance.type]!,
       'description': instance.description,
+      'starttime': instance.starttime?.toIso8601String(),
+      'deadline': instance.deadline?.toIso8601String(),
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };
