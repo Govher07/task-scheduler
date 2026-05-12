@@ -8,6 +8,7 @@ import '../providers/goals_provider.dart';
 import '../widgets/goal_section.dart';
 import '../widgets/sort_controls.dart';
 import '../widgets/task_tile.dart';
+import '../../../core/theme/theme_controller.dart';
 
 class GoalsScreen extends ConsumerWidget {
   const GoalsScreen({super.key});
@@ -18,7 +19,14 @@ class GoalsScreen extends ConsumerWidget {
     final ungroupedAsync = ref.watch(ungroupedTasksProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Goals')),
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Change theme',
+          icon: const Icon(Icons.palette_outlined),
+          onPressed: () => _showThemePicker(context),
+        ),
+        title: const Text('My Goals'),
+      ),
       body: goalsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
@@ -56,8 +64,8 @@ class GoalsScreen extends ConsumerWidget {
                   child: Text(
                     'Ungrouped',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                   ),
                 ),
                 ...ref.watch(sortedTasksProvider(ungroupedTasks)).map((task) {
@@ -110,6 +118,41 @@ class GoalsScreen extends ConsumerWidget {
     );
   }
 
+  void _showThemePicker(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    builder: (context) {
+      return Consumer(
+        builder: (context, ref, _) {
+          final selectedTheme = ref.watch(moodThemeProvider);
+
+          return SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: MoodTheme.values.map((theme) {
+                final isSelected = theme == selectedTheme;
+
+                return ListTile(
+                  leading: Icon(
+                    isSelected
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
+                  ),
+                  title: Text(theme.label),
+                  onTap: () {
+                    ref.read(moodThemeProvider.notifier).setTheme(theme);
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
   void _createGoal(BuildContext context) {
     context.push('/goals/goal/new');
   }
@@ -131,8 +174,8 @@ class GoalsScreen extends ConsumerWidget {
   }
 
   void _updateTaskStatus(WidgetRef ref, task, TaskStatus status) {
-    ref.read(taskRepositoryProvider).updateTask(
-          task.copyWith(status: status, updatedAt: DateTime.now()),
-        );
+    ref
+        .read(taskRepositoryProvider)
+        .updateTask(task.copyWith(status: status, updatedAt: DateTime.now()));
   }
 }
