@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../core/models/enums.dart';
 import '../../../core/models/goal.dart';
 import '../../../core/models/task.dart';
@@ -24,11 +25,15 @@ class GoalSection extends ConsumerWidget {
     required this.onGoalTap,
   });
 
+  
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sortedTasks = ref.watch(sortedTasksProvider(tasks));
     final theme = Theme.of(context);
     final progress = goalProgress(tasks);
+    final dayProgress = goalDaysProgress(goal);
+    final hasDaysBar = goal.starttime != null && goal.deadline != null;
+    final showDeadline = goal.starttime == null && goal.deadline != null;
 
     return ExpansionTile(
       title: GestureDetector(
@@ -36,22 +41,72 @@ class GoalSection extends ConsumerWidget {
         child: Row(
           children: [
             Expanded(child: Text(goal.name)),
-            if (goal.type == GoalType.completable && tasks.isNotEmpty)
+            if (goal.type == GoalType.completable && tasks.isNotEmpty) ...[
+              Text(
+                  'progress\t\t\t\t',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+              ),
               Text(
                 '${(progress * 100).round()}%',
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.outline,
+                  color: theme.colorScheme.primary,
                 ),
               ),
+            ]
           ],
         ),
       ),
-      subtitle: goal.type == GoalType.completable && tasks.isNotEmpty
-          ? LinearProgressIndicator(
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (goal.type == GoalType.completable && tasks.isNotEmpty)
+            LinearProgressIndicator(
               value: progress,
               backgroundColor: theme.colorScheme.surfaceContainerHighest,
-            )
-          : null,
+            ),
+          if (hasDaysBar) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Text(
+                  '${DateFormat.MMMd().format(goal.starttime!)} - ${DateFormat.MMMd().format(goal.deadline!)}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.outline,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${(dayProgress * 100).round()}%',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.tertiary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (showDeadline) ...[
+            const SizedBox(width: 6),
+            Text(
+              'Due ${DateFormat.MMMd().format(goal.deadline!)}',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.outline,
+              ),
+            ),
+          ],
+          if (hasDaysBar) ...[
+            const SizedBox(height: 4),
+            LinearProgressIndicator(
+              value: dayProgress,
+              backgroundColor: theme.colorScheme.surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                theme.colorScheme.tertiary,
+              ),
+            ),
+          ],
+        ],
+      ),
       initiallyExpanded: true,
       children: sortedTasks.map((task) {
         return TaskTile(
