@@ -55,6 +55,19 @@ class TaskTile extends StatelessWidget {
             const SizedBox(width: 8),
             EffortIndicator(level: task.effortLevel),
             if (task.deadline != null) ...[
+              if (task.starttime != null) ...[
+                const SizedBox(width: 8),
+                Text(
+                  '${DateFormat.MMMd().format(task.starttime!)}  -',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+              ] else ...[
+                const SizedBox(width: 8),
+                Text(
+                  'due',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+              ],
               const SizedBox(width: 8),
               Text(
                 DateFormat.MMMd().format(task.deadline!),

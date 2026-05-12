@@ -20,6 +20,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   final _nameController = TextEditingController();
   Priority _priority = Priority.medium;
   EffortLevel _effortLevel = EffortLevel.medium;
+  DateTime? _starttime;
   DateTime? _deadline;
   String? _goalId;
   Task? _existingTask;
@@ -45,6 +46,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         _nameController.text = task.name;
         _priority = task.priority;
         _effortLevel = task.effortLevel;
+        _starttime = task.starttime;
         _deadline = task.deadline;
         _goalId = task.goalId;
         _isLoading = false;
@@ -96,7 +98,31 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(_deadline == null ? 'No deadline' : 'Deadline: ${DateFormat.yMMMd().format(_deadline!)}'),
+              title: Text(_starttime == null ? 'No StartTime' : 'StartTime: ${DateFormat.yMMMd().format(_starttime!)}'),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_starttime != null)
+                    IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _starttime = null)),
+                  IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: _starttime ?? DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                      );
+                      if (date != null) setState(() => _starttime = date);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(_deadline == null ? 'No Deadline' : 'Deadline: ${DateFormat.yMMMd().format(_deadline!)}'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -152,6 +178,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       name: _nameController.text.trim(),
       goalId: _goalId,
       priority: _priority,
+      starttime: _starttime,
       deadline: _deadline,
       estimatedDurationMinutes: _existingTask?.estimatedDurationMinutes,
       effortLevel: _effortLevel,
