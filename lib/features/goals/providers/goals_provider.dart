@@ -46,3 +46,15 @@ double goalProgress(List<Task> tasks) {
   final doneCount = tasks.where((t) => t.status == TaskStatus.done).length;
   return doneCount / tasks.length;
 }
+
+double goalDaysProgress(Goal goal) {
+  if (goal.starttime == null || goal.deadline == null) return 0.0;
+  final start = goal.starttime!;
+  final end = goal.deadline!;
+  final now = DateTime.now();
+  if (now.isBefore(start)) return 0.0;
+  if (now.isAfter(end)) return 1.0;
+  final total = end.difference(start).inMinutes;
+  if (total == 0) return 1.0;
+  return (now.difference(start).inMinutes / total).clamp(0.0, 1.0);
+}
