@@ -113,7 +113,27 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
     );
     final repo = ref.read(goalRepositoryProvider);
     if (_isEditing) { await repo.updateGoal(goal); } else { await repo.createGoal(goal); }
-    if (mounted) context.pop();
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Success'),
+          content: Text(_isEditing
+              ? 'Goal updated successfully.'
+              : 'Goal created successfully.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx); // Close dialog
+                if (mounted) context.pop(); // Return to goals screen
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   void _confirmDelete() {

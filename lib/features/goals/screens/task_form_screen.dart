@@ -70,7 +70,13 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit Task' : 'New Task')),
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Edit Task' : 'New Task'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/calendar'),
+        ),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -188,6 +194,37 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     );
     final repo = ref.read(taskRepositoryProvider);
     if (_isEditing) { await repo.updateTask(task); } else { await repo.createTask(task); }
-    if (mounted) context.pop();
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(
+                _isEditing ? Icons.task_alt : Icons.add_task,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 12),
+              Text(_isEditing ? 'Task Updated' : 'Task Created'),
+            ],
+          ),
+          content: Text(
+            'The task "${task.name}" has been successfully ${_isEditing ? "updated" : "created"}.',
+            style: const TextStyle(fontSize: 16),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx); // Close dialog
+                if (mounted) context.go('/calendar'); // Land on calendar page
+              },
+              child: const Text('Back to Calendar'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 }
