@@ -210,7 +210,38 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
     }
 
     if (mounted) {
-      context.pop();
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(
+                _isEditing ? Icons.edit_calendar : Icons.event_available,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 12),
+              Text(_isEditing ? 'Event Updated' : 'Event Created'),
+            ],
+          ),
+          content: Text(
+            'The event "${event.name}" has been successfully ${_isEditing ? "updated" : "created"}.',
+            style: const TextStyle(fontSize: 16),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                if (mounted) {
+                  context.go('/calendar');
+                }
+              },
+              child: const Text('Back to Calendar'),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -256,6 +287,10 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Event' : 'New Event'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/calendar'),
+        ),
         actions: [
           if (_isEditing)
             IconButton(
