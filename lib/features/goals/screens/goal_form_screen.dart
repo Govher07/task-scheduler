@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/models/enums.dart';
 import '../../../core/models/goal.dart';
@@ -18,6 +19,8 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
+  DateTime? _starttime;
+  DateTime? _deadline;
   GoalType _type = GoalType.completable;
   Goal? _existingGoal;
   bool _isLoading = true;
@@ -36,6 +39,8 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
       setState(() {
         _existingGoal = goal;
         _nameController.text = goal.name;
+        _starttime = goal.starttime;
+        _deadline = goal.deadline;
         _descriptionController.text = goal.description ?? '';
         _type = goal.type;
         _isLoading = false;
@@ -77,6 +82,55 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
               validator: (value) => (value == null || value.trim().isEmpty) ? 'Name is required' : null,
             ),
             const SizedBox(height: 16),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(_starttime == null ? 'No StartTime' : 'StartTime: ${DateFormat.yMMMd().format(_starttime!)}'),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_starttime != null)
+                    IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _starttime = null)),
+                  IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () async {
+                      final now = DateTime.now();
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: _starttime ?? now,
+                        firstDate: DateTime(2020),
+                        lastDate: _deadline ?? DateTime.now().add(const Duration(days: 365 * 5)),
+                      );
+                      if (date != null) setState(() => _starttime = date);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(_deadline == null ? 'No Deadline' : 'Deadline: ${DateFormat.yMMMd().format(_deadline!)}'),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_deadline != null)
+                    IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _deadline = null)),
+                  IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: _deadline ?? DateTime.now(),
+                        firstDate: _starttime ?? DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                      );
+                      if (date != null) setState(() => _deadline = date);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _descriptionController,
               decoration: const InputDecoration(labelText: 'Description (optional)', border: OutlineInputBorder()),
@@ -107,6 +161,8 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
       id: _existingGoal?.id ?? const Uuid().v4(),
       name: _nameController.text.trim(),
       type: _type,
+      starttime: _starttime,
+      deadline: _deadline,
       description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
       createdAt: _existingGoal?.createdAt ?? now,
       updatedAt: now,
