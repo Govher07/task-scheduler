@@ -140,7 +140,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                       final date = await showDatePicker(
                         context: context,
                         initialDate: _deadline ?? DateTime.now(),
-                        firstDate: _starttime ?? DateTime.now(),
+                        firstDate: _starttime ?? DateTime(2020),
                         lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
                       );
                       if (date != null) setState(() => _deadline = date);
