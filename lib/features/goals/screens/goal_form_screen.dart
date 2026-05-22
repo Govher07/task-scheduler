@@ -129,6 +129,7 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
                         firstDate: firstDate,
                         lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
                       );
+                    }
                   ),
                 ],
               ),
