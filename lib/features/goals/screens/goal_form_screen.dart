@@ -93,12 +93,14 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
                     onPressed: () async {
-                      final now = DateTime.now();
+                      final lastDate = _deadline ?? DateTime.now().add(const Duration(days: 365 * 5));
+                      final raw = _starttime ?? DateTime.now();
+                      final initialDate = raw.isAfter(lastDate) ? lastDate : raw;
                       final date = await showDatePicker(
                         context: context,
-                        initialDate: _starttime ?? now,
+                        initialDate: initialDate,
                         firstDate: DateTime(2020),
-                        lastDate: _deadline ?? DateTime.now().add(const Duration(days: 365 * 5)),
+                        lastDate: lastDate,
                       );
                       if (date != null) setState(() => _starttime = date);
                     },
@@ -118,14 +120,15 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
                     onPressed: () async {
+                      final firstDate = _starttime ?? DateTime(2020);
+                      final raw = _deadline ?? DateTime.now();
+                      final initialDate = raw.isBefore(firstDate) ? firstDate : raw;
                       final date = await showDatePicker(
                         context: context,
-                        initialDate: _deadline ?? DateTime.now(),
-                        firstDate: _starttime ?? DateTime.now(),
+                        initialDate: initialDate,
+                        firstDate: firstDate,
                         lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
                       );
-                      if (date != null) setState(() => _deadline = date);
-                    },
                   ),
                 ],
               ),
