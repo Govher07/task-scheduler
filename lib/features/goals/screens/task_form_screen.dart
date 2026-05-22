@@ -74,7 +74,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         title: Text(_isEditing ? 'Edit Task' : 'New Task'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/calendar'),
+          onPressed: () => context.pop(),
         ),
       ),
       body: Form(
@@ -113,11 +113,14 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
                     onPressed: () async {
+                      final lastDate = _deadline ?? DateTime.now().add(const Duration(days: 365 * 5));
+                      final raw = _starttime ?? DateTime.now();
+                      final initialDate = raw.isAfter(lastDate) ? lastDate : raw;
                       final date = await showDatePicker(
                         context: context,
-                        initialDate: _starttime ?? DateTime.now(),
+                        initialDate: initialDate,
                         firstDate: DateTime(2020),
-                        lastDate: _deadline ?? DateTime.now().add(const Duration(days: 365 * 5)),
+                        lastDate: lastDate,
                       );
                       if (date != null) setState(() => _starttime = date);
                     },
@@ -137,10 +140,13 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
                     onPressed: () async {
+                      final firstDate = _starttime ?? DateTime(2020);
+                      final raw = _deadline ?? DateTime.now();
+                      final initialDate = raw.isBefore(firstDate) ? firstDate : raw;
                       final date = await showDatePicker(
                         context: context,
-                        initialDate: _deadline ?? DateTime.now(),
-                        firstDate: _starttime ?? DateTime(2020),
+                        initialDate: initialDate,
+                        firstDate: firstDate,
                         lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
                       );
                       if (date != null) setState(() => _deadline = date);
@@ -217,10 +223,10 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           actions: [
             FilledButton(
               onPressed: () {
-                Navigator.pop(ctx); // Close dialog
-                if (mounted) context.go('/calendar'); // Land on calendar page
+                Navigator.pop(ctx);
+                if (mounted) context.pop();
               },
-              child: const Text('Back to Calendar'),
+              child: const Text('Done'),
             ),
           ],
         ),
