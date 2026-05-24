@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'features/calendar/screens/calendar_screen.dart';
@@ -12,6 +11,7 @@ import 'features/goals/screens/goals_screen.dart';
 import 'features/goals/screens/task_form_screen.dart';
 import 'features/lock/screens/lock_screen.dart';
 import 'features/lock/screens/lock_setup_screen.dart';
+import 'features/gaming/screens/gaming_screen.dart';
 import 'features/onboarding/screen/welcome_screen.dart';
 import 'features/recommender/screens/recommender_screen.dart';
 
@@ -20,7 +20,7 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/goals',
+  initialLocation: '/gaming',
   redirect: (context, state) async {
     final prefs = await SharedPreferences.getInstance();
     final hasSeenWelcome =
@@ -34,7 +34,7 @@ final router = GoRouter(
     }
 
     if (hasSeenWelcome && isGoingToWelcome && !forceWelcome) {
-      return '/goals';
+      return '/gaming';
     }
 
     return null;
@@ -52,6 +52,12 @@ final router = GoRouter(
       navigatorKey: _shellNavigatorKey,
       builder: (context, state, child) => AppShell(child: child),
       routes: [
+        GoRoute(
+          path: '/gaming',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: GamingScreen(),
+          ),
+        ),
         GoRoute(
           path: '/goals',
           pageBuilder: (context, state) => const NoTransitionPage(
@@ -170,6 +176,11 @@ class AppShell extends StatelessWidget {
         onDestinationSelected: (index) => _onItemTapped(index, context),
         destinations: const [
           NavigationDestination(
+            icon: Icon(Icons.gamepad_outlined),
+            selectedIcon: Icon(Icons.gamepad),
+            label: 'Gaming',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.flag_outlined),
             selectedIcon: Icon(Icons.flag),
             label: 'My Goals',
@@ -197,10 +208,11 @@ class AppShell extends StatelessWidget {
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
 
-    if (location.startsWith('/goals')) return 0;
-    if (location.startsWith('/calendar')) return 1;
-    if (location.startsWith('/recommend')) return 2;
-    if (location.startsWith('/lock')) return 3;
+    if (location.startsWith('/gaming')) return 0;
+    if (location.startsWith('/goals')) return 1;
+    if (location.startsWith('/calendar')) return 2;
+    if (location.startsWith('/recommend')) return 3;
+    if (location.startsWith('/lock')) return 4;
 
     return 0;
   }
@@ -208,12 +220,14 @@ class AppShell extends StatelessWidget {
   void _onItemTapped(int index, BuildContext context) {
     switch (index) {
       case 0:
-        context.go('/goals');
+        context.go('/gaming');
       case 1:
-        context.go('/calendar');
+        context.go('/goals');
       case 2:
-        context.go('/recommend');
+        context.go('/calendar');
       case 3:
+        context.go('/recommend');
+      case 4:
         context.go('/lock/setup');
     }
   }
