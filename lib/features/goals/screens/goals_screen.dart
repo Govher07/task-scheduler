@@ -185,5 +185,17 @@ class GoalsScreen extends ConsumerWidget {
             task.copyWith(status: status, updatedAt: now),
           );
     }
+
+    if (task.goalId != null && status == TaskStatus.done) {
+      final goalTasks = await ref.read(taskRepositoryProvider).getTasksByGoalId(task.goalId!);
+      final allDone = goalTasks.isNotEmpty &&
+          goalTasks.every((t) => t.status == TaskStatus.done);
+      if (allDone) {
+        final goal = await ref.read(goalRepositoryProvider).getGoalById(task.goalId!);
+        if (goal != null && !goal.gotRewards) {
+          await ref.read(rewardServiceProvider).grantGoalReward(goal, goalTasks.length);
+        }
+      }
+    }
   }
 }
