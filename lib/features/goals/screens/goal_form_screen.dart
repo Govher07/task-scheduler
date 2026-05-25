@@ -129,6 +129,7 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
                         firstDate: firstDate,
                         lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
                       );
+                      if (date != null) setState(() => _deadline = date);
                     }
                   ),
                 ],
@@ -142,7 +143,7 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<GoalType>(
-              value: _type,
+              initialValue: _type,
               decoration: const InputDecoration(labelText: 'Goal Type', border: OutlineInputBorder()),
               items: const [
                 DropdownMenuItem(value: GoalType.completable, child: Text('Completable')),
@@ -168,6 +169,8 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
       starttime: _starttime,
       deadline: _deadline,
       description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+      gotRewards: _existingGoal?.gotRewards ?? false,
+      rewardCoins: _existingGoal?.rewardCoins ?? 50,
       createdAt: _existingGoal?.createdAt ?? now,
       updatedAt: now,
     );
