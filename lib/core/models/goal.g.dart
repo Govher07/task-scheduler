@@ -19,6 +19,8 @@ _$GoalImpl _$$GoalImplFromJson(Map<String, dynamic> json) => _$GoalImpl(
   deadline: json['deadline'] == null
       ? null
       : DateTime.parse(json['deadline'] as String),
+  gotRewards: json['gotRewards'] as bool? ?? false,
+  rewardCoins: (json['rewardCoins'] as num?)?.toInt() ?? 50,
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),
 );
@@ -31,6 +33,8 @@ Map<String, dynamic> _$$GoalImplToJson(_$GoalImpl instance) =>
       'description': instance.description,
       'starttime': instance.starttime?.toIso8601String(),
       'deadline': instance.deadline?.toIso8601String(),
+      'gotRewards': instance.gotRewards,
+      'rewardCoins': instance.rewardCoins,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };

@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/models/enums.dart';
 import '../../../core/models/task.dart';
 import '../../../core/providers.dart';
+import '../../../core/services/reward_service.dart';
 
 class TaskFormScreen extends ConsumerStatefulWidget {
   final String? taskId;
@@ -89,14 +90,14 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<Priority>(
-              value: _priority,
+              initialValue: _priority,
               decoration: const InputDecoration(labelText: 'Priority', border: OutlineInputBorder()),
               items: Priority.values.map((p) => DropdownMenuItem(value: p, child: Text(p.name.toUpperCase()))).toList(),
               onChanged: (value) => setState(() => _priority = value!),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<EffortLevel>(
-              value: _effortLevel,
+              initialValue: _effortLevel,
               decoration: const InputDecoration(labelText: 'Effort Level', border: OutlineInputBorder()),
               items: EffortLevel.values.map((e) => DropdownMenuItem(value: e, child: Text(e.name.toUpperCase()))).toList(),
               onChanged: (value) => setState(() => _effortLevel = value!),
@@ -161,7 +162,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
               builder: (context, snapshot) {
                 final goals = snapshot.data ?? [];
                 return DropdownButtonFormField<String?>(
-                  value: _goalId,
+                  initialValue: _goalId,
                   decoration: const InputDecoration(labelText: 'Goal (optional)', border: OutlineInputBorder()),
                   items: [
                     const DropdownMenuItem(value: null, child: Text('No goal')),
@@ -195,6 +196,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       estimatedDurationMinutes: _existingTask?.estimatedDurationMinutes,
       effortLevel: _effortLevel,
       status: _existingTask?.status ?? TaskStatus.todo,
+      gotRewards: _existingTask?.gotRewards ?? false,
+      rewardCoins: RewardService.calcStaticReward(_priority, _effortLevel),
       createdAt: _existingTask?.createdAt ?? now,
       updatedAt: now,
     );

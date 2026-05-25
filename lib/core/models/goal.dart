@@ -13,6 +13,8 @@ class Goal with _$Goal {
     String? description,
     DateTime? starttime,
     DateTime? deadline,
+    @Default(false) bool gotRewards,
+    @Default(50) int rewardCoins,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Goal;

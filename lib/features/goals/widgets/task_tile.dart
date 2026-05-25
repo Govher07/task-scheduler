@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../core/models/enums.dart';
 import '../../../core/models/task.dart';
-import '../../../core/widgets/priority_badge.dart';
+import '../../../core/services/reward_service.dart';
 import '../../../core/widgets/effort_indicator.dart';
-import 'package:intl/intl.dart';
+import '../../../core/widgets/priority_badge.dart';
 
 class TaskTile extends StatelessWidget {
   final Task task;
@@ -76,7 +77,48 @@ class TaskTile extends StatelessWidget {
             ],
           ],
         ),
+        trailing: _CoinBadge(
+          coins: RewardService.calcTotalReward(task),
+          collected: task.gotRewards,
+        ),
         onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _CoinBadge extends StatelessWidget {
+  final int coins;
+  final bool collected;
+
+  const _CoinBadge({required this.coins, required this.collected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: collected ? 0.35 : 1.0,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5C842).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF5C842)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🪙', style: TextStyle(fontSize: 11)),
+            const SizedBox(width: 3),
+            Text(
+              '$coins',
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF8B6914),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

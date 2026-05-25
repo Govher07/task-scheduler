@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/models/enums.dart';
 import '../../../core/models/goal.dart';
 import '../../../core/models/task.dart';
+import '../../../core/services/reward_service.dart';
 import '../providers/goals_provider.dart';
 import 'task_tile.dart';
 
@@ -54,7 +55,12 @@ class GoalSection extends ConsumerWidget {
                   color: theme.colorScheme.primary,
                 ),
               ),
-            ]
+              const SizedBox(width: 8),
+            ],
+            _GoalCoinBadge(
+              coins: goal.rewardCoins + RewardService.calcGoalDynamicBonus(goal, tasks.length),
+              collected: goal.gotRewards,
+            ),
           ],
         ),
       ),
@@ -116,6 +122,43 @@ class GoalSection extends ConsumerWidget {
           onStatusChanged: (status) => onTaskStatusChanged(task, status),
         );
       }).toList(),
+    );
+  }
+}
+
+class _GoalCoinBadge extends StatelessWidget {
+  final int coins;
+  final bool collected;
+
+  const _GoalCoinBadge({required this.coins, required this.collected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: collected ? 0.35 : 1.0,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5C842).withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF5C842)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🪙', style: TextStyle(fontSize: 11)),
+            const SizedBox(width: 3),
+            Text(
+              '$coins',
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF8B6914),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

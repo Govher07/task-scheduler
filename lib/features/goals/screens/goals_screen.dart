@@ -173,9 +173,17 @@ class GoalsScreen extends ConsumerWidget {
     ref.read(taskRepositoryProvider).deleteTask(taskId);
   }
 
-  void _updateTaskStatus(WidgetRef ref, task, TaskStatus status) {
-    ref
-        .read(taskRepositoryProvider)
-        .updateTask(task.copyWith(status: status, updatedAt: DateTime.now()));
+  Future<void> _updateTaskStatus(WidgetRef ref, task, TaskStatus status) async {
+    final now = DateTime.now();
+    if (status == TaskStatus.done && !task.gotRewards) {
+      await ref.read(rewardServiceProvider).grantTaskReward(task);
+      await ref.read(taskRepositoryProvider).updateTask(
+            task.copyWith(status: status, gotRewards: true, updatedAt: now),
+          );
+    } else {
+      await ref.read(taskRepositoryProvider).updateTask(
+            task.copyWith(status: status, updatedAt: now),
+          );
+    }
   }
 }
