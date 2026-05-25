@@ -119,6 +119,93 @@ class RewardService {
     return row['balance'] as int? ?? 0;
   }
 
+  Future<void> purchaseItem(String itemId, int price) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final balance = await getBalance();
+    if (balance < price) throw Exception('Insufficient coins');
+
+    await Future.wait([
+      _client.from('coin_transactions').insert({
+        'user_id': userId,
+        'amount': -price,
+        'reason': 'item_purchased',
+      }),
+      _incrementBalance(userId, -price),
+      _client.from('shop_inventory').insert({
+        'user_id': userId,
+        'item_id': itemId,
+        'price_paid': price,
+      }),
+    ]);
+  }
+
+  Future<Map<String, Map<String, dynamic>?>> getRoomSlots() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return {};
+
+    final rows = await _client
+        .from('room_slots')
+        .select('slot_type, shop_items(*)')
+        .eq('user_id', userId);
+
+    final result = <String, Map<String, dynamic>?>{
+      'animals': null, 'plants': null, 'decor': null, 'characters': null,
+    };
+    for (final row in rows) {
+      final slotType = row['slot_type'] as String;
+      final itemData = row['shop_items'];
+      if (itemData != null) result[slotType] = Map<String, dynamic>.from(itemData as Map);
+    }
+    return result;
+  }
+
+  Future<void> setRoomSlot(String slotType, String? itemId) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    if (itemId == null) {
+      await _client.from('room_slots').delete()
+          .eq('user_id', userId).eq('slot_type', slotType);
+    } else {
+      await _client.from('room_slots').upsert({
+        'user_id': userId,
+        'slot_type': slotType,
+        'item_id': itemId,
+      }, onConflict: 'user_id,slot_type');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getShopItems() async {
+    final rows = await _client
+        .from('shop_items')
+        .select()
+        .eq('is_active', true)
+        .order('category')
+        .order('price');
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  Future<List<Map<String, dynamic>>> getOwnedItems() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return [];
+
+    final rows = await _client
+        .from('shop_inventory')
+        .select('shop_items(*)')
+        .eq('user_id', userId);
+
+    return rows
+        .map((r) => Map<String, dynamic>.from(r['shop_items'] as Map))
+        .toList();
+  }
+
+  Future<List<String>> getPurchasedItemNames() async {
+    final owned = await getOwnedItems();
+    return owned.map((r) => r['name'] as String).toList();
+  }
+
   Future<void> spendCoins({
     required int amount,
     required String itemId,
