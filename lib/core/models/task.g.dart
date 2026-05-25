@@ -26,6 +26,8 @@ _$TaskImpl _$$TaskImplFromJson(Map<String, dynamic> json) => _$TaskImpl(
   status:
       $enumDecodeNullable(_$TaskStatusEnumMap, json['status']) ??
       TaskStatus.todo,
+  gotRewards: json['gotRewards'] as bool? ?? false,
+  rewardCoins: (json['rewardCoins'] as num?)?.toInt() ?? 10,
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),
 );
@@ -41,6 +43,8 @@ Map<String, dynamic> _$$TaskImplToJson(_$TaskImpl instance) =>
       'estimatedDurationMinutes': instance.estimatedDurationMinutes,
       'effortLevel': _$EffortLevelEnumMap[instance.effortLevel]!,
       'status': _$TaskStatusEnumMap[instance.status]!,
+      'gotRewards': instance.gotRewards,
+      'rewardCoins': instance.rewardCoins,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };

@@ -23,6 +23,8 @@ class SupabaseTaskRepository implements TaskRepository {
       estimatedDurationMinutes: row['estimated_duration_minutes'] as int?,
       effortLevel: EffortLevel.values.byName(row['effort_level'] as String),
       status: TaskStatus.values.byName(row['status'] as String),
+      gotRewards: row['got_rewards'] as bool? ?? false,
+      rewardCoins: row['reward_coins'] as int? ?? 10,
       createdAt: DateTime.parse(row['created_at'] as String),
       updatedAt: DateTime.parse(row['updated_at'] as String),
     );
@@ -39,6 +41,9 @@ class SupabaseTaskRepository implements TaskRepository {
       'estimated_duration_minutes': task.estimatedDurationMinutes,
       'effort_level': task.effortLevel.name,
       'status': task.status.name,
+      'got_rewards': task.gotRewards,
+      'reward_coins': task.rewardCoins,
+      'user_id': _client.auth.currentUser?.id,
       'created_at': task.createdAt.toIso8601String(),
       'updated_at': task.updatedAt.toIso8601String(),
     };

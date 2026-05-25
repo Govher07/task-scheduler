@@ -30,6 +30,8 @@ mixin _$Task {
   int? get estimatedDurationMinutes => throw _privateConstructorUsedError;
   EffortLevel get effortLevel => throw _privateConstructorUsedError;
   TaskStatus get status => throw _privateConstructorUsedError;
+  bool get gotRewards => throw _privateConstructorUsedError;
+  int get rewardCoins => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -57,6 +59,8 @@ abstract class $TaskCopyWith<$Res> {
     int? estimatedDurationMinutes,
     EffortLevel effortLevel,
     TaskStatus status,
+    bool gotRewards,
+    int rewardCoins,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -86,6 +90,8 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
     Object? estimatedDurationMinutes = freezed,
     Object? effortLevel = null,
     Object? status = null,
+    Object? gotRewards = null,
+    Object? rewardCoins = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -127,6 +133,14 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
                 ? _value.status
                 : status // ignore: cast_nullable_to_non_nullable
                       as TaskStatus,
+            gotRewards: null == gotRewards
+                ? _value.gotRewards
+                : gotRewards // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            rewardCoins: null == rewardCoins
+                ? _value.rewardCoins
+                : rewardCoins // ignore: cast_nullable_to_non_nullable
+                      as int,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -159,6 +173,8 @@ abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
     int? estimatedDurationMinutes,
     EffortLevel effortLevel,
     TaskStatus status,
+    bool gotRewards,
+    int rewardCoins,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -185,6 +201,8 @@ class __$$TaskImplCopyWithImpl<$Res>
     Object? estimatedDurationMinutes = freezed,
     Object? effortLevel = null,
     Object? status = null,
+    Object? gotRewards = null,
+    Object? rewardCoins = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -226,6 +244,14 @@ class __$$TaskImplCopyWithImpl<$Res>
             ? _value.status
             : status // ignore: cast_nullable_to_non_nullable
                   as TaskStatus,
+        gotRewards: null == gotRewards
+            ? _value.gotRewards
+            : gotRewards // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        rewardCoins: null == rewardCoins
+            ? _value.rewardCoins
+            : rewardCoins // ignore: cast_nullable_to_non_nullable
+                  as int,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -252,6 +278,8 @@ class _$TaskImpl implements _Task {
     this.estimatedDurationMinutes,
     this.effortLevel = EffortLevel.medium,
     this.status = TaskStatus.todo,
+    this.gotRewards = false,
+    this.rewardCoins = 10,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -281,13 +309,19 @@ class _$TaskImpl implements _Task {
   @JsonKey()
   final TaskStatus status;
   @override
+  @JsonKey()
+  final bool gotRewards;
+  @override
+  @JsonKey()
+  final int rewardCoins;
+  @override
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'Task(id: $id, name: $name, goalId: $goalId, priority: $priority, starttime: $starttime, deadline: $deadline, estimatedDurationMinutes: $estimatedDurationMinutes, effortLevel: $effortLevel, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Task(id: $id, name: $name, goalId: $goalId, priority: $priority, starttime: $starttime, deadline: $deadline, estimatedDurationMinutes: $estimatedDurationMinutes, effortLevel: $effortLevel, status: $status, gotRewards: $gotRewards, rewardCoins: $rewardCoins, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -312,6 +346,10 @@ class _$TaskImpl implements _Task {
             (identical(other.effortLevel, effortLevel) ||
                 other.effortLevel == effortLevel) &&
             (identical(other.status, status) || other.status == status) &&
+            (identical(other.gotRewards, gotRewards) ||
+                other.gotRewards == gotRewards) &&
+            (identical(other.rewardCoins, rewardCoins) ||
+                other.rewardCoins == rewardCoins) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -331,6 +369,8 @@ class _$TaskImpl implements _Task {
     estimatedDurationMinutes,
     effortLevel,
     status,
+    gotRewards,
+    rewardCoins,
     createdAt,
     updatedAt,
   );
@@ -360,6 +400,8 @@ abstract class _Task implements Task {
     final int? estimatedDurationMinutes,
     final EffortLevel effortLevel,
     final TaskStatus status,
+    final bool gotRewards,
+    final int rewardCoins,
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _$TaskImpl;
@@ -384,6 +426,10 @@ abstract class _Task implements Task {
   EffortLevel get effortLevel;
   @override
   TaskStatus get status;
+  @override
+  bool get gotRewards;
+  @override
+  int get rewardCoins;
   @override
   DateTime get createdAt;
   @override

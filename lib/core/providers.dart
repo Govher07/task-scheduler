@@ -6,10 +6,10 @@ import 'repositories/event_repository.dart';
 import 'repositories/supabase_goal_repository.dart';
 import 'repositories/supabase_task_repository.dart';
 import 'repositories/supabase_event_repository.dart';
-
 import 'repositories/mock_goal_repository.dart';
 import 'repositories/mock_task_repository.dart';
 import 'repositories/mock_event_repository.dart';
+import 'services/reward_service.dart';
 
 const bool useMock = false;
 
@@ -42,4 +42,8 @@ final eventRepositoryProvider = Provider<EventRepository>((ref) {
     return repo;
   }
   return SupabaseEventRepository(ref.watch(supabaseClientProvider));
+});
+
+final rewardServiceProvider = Provider<RewardService>((ref) {
+  return RewardService(ref.watch(supabaseClientProvider));
 });
