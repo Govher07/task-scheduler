@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers.dart';
 
 // ── Shared colors ─────────────────────────────────────────────────────────────
 const _brown = Color(0xFF5C3D11);
@@ -10,62 +12,106 @@ const _cardBg = Color(0xFFF5EDD8);
 enum _Cat { all, animals, decor, plants, characters }
 
 class _Item {
-  final String asset, name;
+  final String id, asset, name;
   final int price;
   final _Cat cat;
   final String? desc;
-  const _Item(this.asset, this.name, this.price,
+  const _Item(this.id, this.asset, this.name, this.price,
       {required this.cat, this.desc});
 }
 
-const _allItems = [
-  // Animals
-  _Item('assets/transparent_512/chick.png', 'Chick', 200, cat: _Cat.animals),
-  _Item('assets/transparent_512/cream_cat.png', 'Cream Cat', 800, cat: _Cat.animals, desc: 'A soft, elegant companion.'),
-  _Item('assets/transparent_512/golden_puppy.png', 'Golden Pup', 600, cat: _Cat.animals, desc: 'A loyal friend with a heart of gold.'),
-  _Item('assets/transparent_512/hedgehog.png', 'Hedgehog', 350, cat: _Cat.animals),
-  _Item('assets/transparent_512/lamb.png', 'Lamb', 400, cat: _Cat.animals),
-  _Item('assets/transparent_512/white_rabbit.png', 'White Rabbit', 500, cat: _Cat.animals, desc: 'Gentle and curious by nature.'),
-  // Plants
-  _Item('assets/transparent_512/fern.png', 'Fern', 80, cat: _Cat.plants),
-  _Item('assets/transparent_512/flower_pitcher.png', 'Flower Pitcher', 100, cat: _Cat.plants),
-  _Item('assets/transparent_512/flowering_cactus.png', 'Flowering Cactus', 120, cat: _Cat.plants),
-  _Item('assets/transparent_512/hanging_vine_plant.png', 'Hanging Vine', 90, cat: _Cat.plants),
-  _Item('assets/transparent_512/heartleaf_plant.png', 'Heartleaf', 85, cat: _Cat.plants),
-  _Item('assets/transparent_512/ivy_plant.png', 'Ivy Plant', 80, cat: _Cat.plants),
-  _Item('assets/transparent_512/jade_succulent.png', 'Jade Succulent', 110, cat: _Cat.plants),
-  _Item('assets/transparent_512/pilea_plant.png', 'Pilea Plant', 150, cat: _Cat.plants),
-  _Item('assets/transparent_512/snake_plant.png', 'Snake Plant', 100, cat: _Cat.plants),
-  _Item('assets/transparent_512/succulent.png', 'Succulent', 70, cat: _Cat.plants),
-  _Item('assets/transparent_512/violet_blossom.png', 'Violet Blossom', 95, cat: _Cat.plants),
-  // Decor
-  _Item('assets/transparent_512/laundry_basket.png', 'Laundry Basket', 450, cat: _Cat.decor),
-  _Item('assets/transparent_512/lily_frame.png', 'Lily Frame', 280, cat: _Cat.decor),
-  _Item('assets/transparent_512/rocking_chair.png', 'Rocking Chair', 380, cat: _Cat.decor),
-  _Item('assets/transparent_512/table_lamp.png', 'Table Lamp', 350, cat: _Cat.decor),
-  _Item('assets/transparent_512/tea_set.png', 'Tea Set', 300, cat: _Cat.decor),
-  _Item('assets/transparent_512/watering_can.png', 'Watering Can', 120, cat: _Cat.decor),
-  _Item('assets/transparent_512/wooden_stool.png', 'Wooden Stool', 300, cat: _Cat.decor),
-  // Characters
-  _Item('assets/transparent_512/flower_basket_girl.png', 'Flower Girl', 700, cat: _Cat.characters),
-  _Item('assets/transparent_512/gardener_boy.png', 'Little Gardener', 700, cat: _Cat.characters),
-  _Item('assets/transparent_512/girl_with_mug.png', 'Mug Girl', 650, cat: _Cat.characters),
-  _Item('assets/transparent_512/lantern_boy.png', 'Lantern Boy', 600, cat: _Cat.characters),
-  _Item('assets/transparent_512/maid_girl.png', 'Maid Mia', 750, cat: _Cat.characters),
-  _Item('assets/transparent_512/mushroom_boy.png', 'Mushroom Boy', 550, cat: _Cat.characters),
-  _Item('assets/transparent_512/reading_girl.png', 'Reading Girl', 680, cat: _Cat.characters),
-  _Item('assets/transparent_512/sleepy_boy.png', 'Sleepy Sam', 450, cat: _Cat.characters),
-];
+_Cat _catFromString(String s) => switch (s) {
+  'animals'    => _Cat.animals,
+  'plants'     => _Cat.plants,
+  'decor'      => _Cat.decor,
+  'characters' => _Cat.characters,
+  _            => _Cat.all,
+};
 
-const _featuredItems = [
-  _Item('assets/transparent_512/golden_puppy.png', 'Golden Pup', 600, cat: _Cat.animals, desc: 'A loyal friend with a heart of gold.'),
-  _Item('assets/transparent_512/cream_cat.png', 'Cream Cat', 800, cat: _Cat.animals, desc: 'A soft, elegant companion.'),
-  _Item('assets/transparent_512/white_rabbit.png', 'White Rabbit', 500, cat: _Cat.animals, desc: 'Gentle and curious by nature.'),
-];
+_Item _itemFromRow(Map<String, dynamic> r) => _Item(
+  r['id'] as String,
+  r['asset_path'] as String,
+  r['name'] as String,
+  r['price'] as int,
+  cat: _catFromString(r['category'] as String),
+  desc: r['description'] as String?,
+);
 
 // ── GamingScreen ──────────────────────────────────────────────────────────────
-class GamingScreen extends StatelessWidget {
+class GamingScreen extends ConsumerStatefulWidget {
   const GamingScreen({super.key});
+
+  @override
+  ConsumerState<GamingScreen> createState() => _GamingScreenState();
+}
+
+class _GamingScreenState extends ConsumerState<GamingScreen> {
+  Map<String, _Item?> _slots = {
+    'animals': null, 'plants': null, 'decor': null, 'characters': null,
+  };
+
+  // Positions as fractions of screen (dx, dy from center: -1=edge, 0=center, 1=edge)
+  static const _slotAlignments = {
+    'plants':     Alignment(-1.10, -0.10),
+    'decor':      Alignment(-0.80,  0.20),
+    'characters': Alignment( 0.65,  -0.05),
+    'animals':    Alignment( -0.10,  0.70),
+  };
+
+  static const _slotSizes = {
+    'plants': 130.0, 'decor': 160.0, 'characters': 200.0, 'animals': 160.0,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSlots();
+  }
+
+  Future<void> _loadSlots() async {
+    final data = await ref.read(rewardServiceProvider).getRoomSlots();
+    if (mounted) {
+      setState(() {
+        _slots = data.map((k, v) => MapEntry(k, v != null ? _itemFromRow(v) : null));
+      });
+    }
+  }
+
+  Future<void> _openSlotPicker(String slotType) async {
+    final ownedRows = await ref.read(rewardServiceProvider).getOwnedItems();
+    final ownedOfType = ownedRows
+        .map(_itemFromRow)
+        .where((i) => i.cat == _catFromString(slotType))
+        .toList();
+
+    if (!mounted) return;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: _cardBg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _SlotPickerSheet(
+        slotType: slotType,
+        items: ownedOfType,
+        currentItem: _slots[slotType],
+        onSelect: (item) async {
+          Navigator.pop(ctx);
+          try {
+            await ref.read(rewardServiceProvider).setRoomSlot(slotType, item?.id);
+            await _loadSlots();
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+              );
+            }
+          }
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,19 +134,48 @@ class GamingScreen extends StatelessWidget {
               ),
             ),
           ),
+          // Room decoration slots
+          ..._slotAlignments.entries.map((entry) {
+            final slotType = entry.key;
+            final item = _slots[slotType];
+            final size = _slotSizes[slotType]!;
+            return Align(
+              alignment: entry.value,
+              child: GestureDetector(
+                onTap: () => _openSlotPicker(slotType),
+                child: item != null
+                    ? Image.asset(item.asset, width: size, height: size, fit: BoxFit.contain)
+                    : _EmptySlot(size: size),
+              ),
+            );
+          }),
           SafeArea(
             child: Align(
               alignment: Alignment.topRight,
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: IconButton(
-                  onPressed: () => _openShop(context),
-                  icon: const Icon(Icons.store_rounded, size: 26),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.white.withValues(alpha: 0.22),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.all(12),
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () => _openBackpack(context),
+                      icon: const Text('🎒', style: TextStyle(fontSize: 22)),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.22),
+                        padding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: () => _openShop(context),
+                      icon: const Icon(Icons.store_rounded, size: 26),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.22),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -112,30 +187,234 @@ class GamingScreen extends StatelessWidget {
 
   void _openShop(BuildContext context) {
     Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => const _ShopPage(),
+      MaterialPageRoute(fullscreenDialog: true, builder: (_) => const _ShopPage()),
+    );
+  }
+
+  void _openBackpack(BuildContext context) {
+    Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(fullscreenDialog: true, builder: (_) => const _BackpackPage()),
+    );
+  }
+}
+
+// ── Empty slot indicator ───────────────────────────────────────────────────────
+class _EmptySlot extends StatelessWidget {
+  final double size;
+  const _EmptySlot({required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.4),
+          width: 2,
+          strokeAlign: BorderSide.strokeAlignInside,
+        ),
+      ),
+      child: Icon(Icons.add, color: Colors.white.withValues(alpha: 0.5), size: size * 0.35),
+    );
+  }
+}
+
+// ── Slot picker bottom sheet ───────────────────────────────────────────────────
+class _SlotPickerSheet extends StatelessWidget {
+  final String slotType;
+  final List<_Item> items;
+  final _Item? currentItem;
+  final void Function(_Item? item) onSelect;
+
+  const _SlotPickerSheet({
+    required this.slotType,
+    required this.items,
+    required this.currentItem,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final label = slotType[0].toUpperCase() + slotType.substring(1);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Place $label',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _brown),
+              ),
+              const Spacer(),
+              if (currentItem != null)
+                TextButton.icon(
+                  onPressed: () => onSelect(null),
+                  icon: const Icon(Icons.delete_outline, size: 16),
+                  label: const Text('Remove'),
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (items.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'No $slotType owned yet.\nBuy some from the shop!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: _brown.withValues(alpha: 0.6)),
+                ),
+              ),
+            )
+          else
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                childAspectRatio: 0.85,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
+              itemCount: items.length,
+              itemBuilder: (_, i) {
+                final item = items[i];
+                final isSelected = currentItem?.id == item.id;
+                return GestureDetector(
+                  onTap: () => onSelect(item),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isSelected ? _sage.withValues(alpha: 0.2) : _cardBg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? _sage : _brown.withValues(alpha: 0.2),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Image.asset(item.asset, fit: BoxFit.contain),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text(
+                            item.name,
+                            style: TextStyle(fontSize: 9, color: _brown, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
       ),
     );
   }
 }
 
 // ── Shop page ─────────────────────────────────────────────────────────────────
-class _ShopPage extends StatefulWidget {
+class _ShopPage extends ConsumerStatefulWidget {
   const _ShopPage();
 
   @override
-  State<_ShopPage> createState() => _ShopPageState();
+  ConsumerState<_ShopPage> createState() => _ShopPageState();
 }
 
-class _ShopPageState extends State<_ShopPage> {
+class _ShopPageState extends ConsumerState<_ShopPage> {
   _Cat _cat = _Cat.all;
   int _featuredIdx = 0;
   final _pageCtrl = PageController();
+  int _balance = 0;
+  List<_Item> _items = [];
+  List<_Item> _featured = [];
+  Set<String> _ownedIds = {};
 
-  List<_Item> get _filtered => _cat == _Cat.all
-      ? _allItems
-      : _allItems.where((i) => i.cat == _cat).toList();
+  List<_Item> get _filtered {
+    final base = _cat == _Cat.all
+        ? _items
+        : _items.where((i) => i.cat == _cat).toList();
+    return base.where((i) => !_ownedIds.contains(i.id)).toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final svc = ref.read(rewardServiceProvider);
+    final results = await Future.wait([
+      svc.getBalance(),
+      svc.getShopItems(),
+      svc.getOwnedItems(),
+    ]);
+    if (mounted) {
+      final allItems = (results[1] as List<Map<String, dynamic>>)
+          .map(_itemFromRow)
+          .toList();
+      final ownedIds = (results[2] as List<Map<String, dynamic>>)
+          .map((r) => r['id'] as String)
+          .toSet();
+      setState(() {
+        _balance = results[0] as int;
+        _items = allItems;
+        _featured = allItems.where((i) => i.desc != null).toList();
+        _ownedIds = ownedIds;
+      });
+    }
+  }
+
+  Future<void> _buyItem(_Item item) async {
+    if (_balance < item.price) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not enough coins!')),
+      );
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Buy ${item.name}?'),
+        content: Text('This will cost 🪙 ${item.price} coins.\nYour balance: 🪙 $_balance'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Buy')),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await ref.read(rewardServiceProvider).purchaseItem(item.id, item.price);
+      await _loadData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${item.name} purchased!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Purchase failed: $e')),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -209,7 +488,7 @@ class _ShopPageState extends State<_ShopPage> {
             ),
           ),
         ),
-        const _CurrencyChip(amount: '12,450'),
+        _CurrencyChip(amount: '$_balance'),
       ],
     );
   }
@@ -269,10 +548,10 @@ class _ShopPageState extends State<_ShopPage> {
         children: [
           PageView.builder(
             controller: _pageCtrl,
-            itemCount: _featuredItems.length,
+            itemCount: _featured.length,
             onPageChanged: (i) => setState(() => _featuredIdx = i),
             itemBuilder: (_, i) {
-              final item = _featuredItems[i];
+              final item = _featured[i];
               return Padding(
                 padding: const EdgeInsets.all(14),
                 child: Row(
@@ -333,7 +612,7 @@ class _ShopPageState extends State<_ShopPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
-                _featuredItems.length,
+                _featured.length,
                 (i) => AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   margin: const EdgeInsets.symmetric(horizontal: 3),
@@ -366,7 +645,7 @@ class _ShopPageState extends State<_ShopPage> {
         mainAxisSpacing: 8,
       ),
       itemCount: items.length,
-      itemBuilder: (_, i) => _ItemCard(item: items[i]),
+      itemBuilder: (_, i) => _ItemCard(item: items[i], onBuy: () => _buyItem(items[i])),
     );
   }
 
@@ -459,7 +738,8 @@ class _PriceTag extends StatelessWidget {
 // ── Item card ─────────────────────────────────────────────────────────────────
 class _ItemCard extends StatelessWidget {
   final _Item item;
-  const _ItemCard({required this.item});
+  final VoidCallback onBuy;
+  const _ItemCard({required this.item, required this.onBuy});
 
   @override
   Widget build(BuildContext context) {
@@ -511,7 +791,7 @@ class _ItemCard extends StatelessWidget {
                   height: 22,
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: onBuy,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _sage,
                       foregroundColor: Colors.white,
@@ -525,6 +805,182 @@ class _ItemCard extends StatelessWidget {
                       'Buy',
                       style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                     ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Backpack page ─────────────────────────────────────────────────────────────
+class _BackpackPage extends ConsumerStatefulWidget {
+  const _BackpackPage();
+
+  @override
+  ConsumerState<_BackpackPage> createState() => _BackpackPageState();
+}
+
+class _BackpackPageState extends ConsumerState<_BackpackPage> {
+  List<_Item> _ownedItems = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadItems();
+  }
+
+  Future<void> _loadItems() async {
+    final rows = await ref.read(rewardServiceProvider).getOwnedItems();
+    if (mounted) {
+      setState(() {
+        _ownedItems = rows.map(_itemFromRow).toList();
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ownedItems = _ownedItems;
+
+    return Scaffold(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset('assets/images/shop_frame.png', fit: BoxFit.fill),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(28, 12, 28, 8),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: _cardBg,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: _brown.withValues(alpha: 0.3)),
+                          ),
+                          child: const Icon(Icons.arrow_back_ios_new, color: _brown, size: 16),
+                        ),
+                      ),
+                      const Expanded(
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('🎒', style: TextStyle(fontSize: 16)),
+                              SizedBox(width: 6),
+                              Text(
+                                'Backpack',
+                                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: _brown),
+                              ),
+                              SizedBox(width: 6),
+                              Text('🎒', style: TextStyle(fontSize: 16)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 40),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (_loading)
+                    const Expanded(child: Center(child: CircularProgressIndicator()))
+                  else if (ownedItems.isEmpty)
+                    Expanded(
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🎒', style: TextStyle(fontSize: 48)),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Your backpack is empty',
+                              style: TextStyle(color: _brown.withValues(alpha: 0.7), fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Buy items from the shop!',
+                              style: TextStyle(color: _brown.withValues(alpha: 0.5), fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: GridView.builder(
+                        padding: EdgeInsets.zero,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          childAspectRatio: 0.85,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
+                        itemCount: ownedItems.length,
+                        itemBuilder: (_, i) => _BackpackItemCard(item: ownedItems[i]),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BackpackItemCard extends StatelessWidget {
+  final _Item item;
+  const _BackpackItemCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _brown.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+              child: Image.asset(item.asset, fit: BoxFit.contain),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
+            child: Column(
+              children: [
+                Text(
+                  item.name,
+                  style: const TextStyle(fontSize: 10, color: _brown, fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: _sage.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: _sage.withValues(alpha: 0.5)),
+                  ),
+                  child: const Text(
+                    'Owned',
+                    style: TextStyle(fontSize: 9, color: _sage, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
