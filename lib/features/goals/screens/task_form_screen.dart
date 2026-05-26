@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/models/enums.dart';
 import '../../../core/models/task.dart';
 import '../../../core/providers.dart';
+import '../../../core/services/reward_service.dart';
 
 class TaskFormScreen extends ConsumerStatefulWidget {
   final String? taskId;
@@ -20,6 +21,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   final _nameController = TextEditingController();
   Priority _priority = Priority.medium;
   EffortLevel _effortLevel = EffortLevel.medium;
+  DateTime? _starttime;
   DateTime? _deadline;
   String? _goalId;
   Task? _existingTask;
@@ -45,6 +47,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         _nameController.text = task.name;
         _priority = task.priority;
         _effortLevel = task.effortLevel;
+        _starttime = task.starttime;
         _deadline = task.deadline;
         _goalId = task.goalId;
         _isLoading = false;
@@ -68,7 +71,13 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit Task' : 'New Task')),
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Edit Task' : 'New Task'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -81,14 +90,14 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<Priority>(
-              value: _priority,
+              initialValue: _priority,
               decoration: const InputDecoration(labelText: 'Priority', border: OutlineInputBorder()),
               items: Priority.values.map((p) => DropdownMenuItem(value: p, child: Text(p.name.toUpperCase()))).toList(),
               onChanged: (value) => setState(() => _priority = value!),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<EffortLevel>(
-              value: _effortLevel,
+              initialValue: _effortLevel,
               decoration: const InputDecoration(labelText: 'Effort Level', border: OutlineInputBorder()),
               items: EffortLevel.values.map((e) => DropdownMenuItem(value: e, child: Text(e.name.toUpperCase()))).toList(),
               onChanged: (value) => setState(() => _effortLevel = value!),
@@ -96,7 +105,34 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(_deadline == null ? 'No deadline' : 'Deadline: ${DateFormat.yMMMd().format(_deadline!)}'),
+              title: Text(_starttime == null ? 'No StartTime' : 'StartTime: ${DateFormat.yMMMd().format(_starttime!)}'),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_starttime != null)
+                    IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _starttime = null)),
+                  IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () async {
+                      final lastDate = _deadline ?? DateTime.now().add(const Duration(days: 365 * 5));
+                      final raw = _starttime ?? DateTime.now();
+                      final initialDate = raw.isAfter(lastDate) ? lastDate : raw;
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: initialDate,
+                        firstDate: DateTime(2020),
+                        lastDate: lastDate,
+                      );
+                      if (date != null) setState(() => _starttime = date);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(_deadline == null ? 'No Deadline' : 'Deadline: ${DateFormat.yMMMd().format(_deadline!)}'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -105,10 +141,13 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
                     onPressed: () async {
+                      final firstDate = _starttime ?? DateTime(2020);
+                      final raw = _deadline ?? DateTime.now();
+                      final initialDate = raw.isBefore(firstDate) ? firstDate : raw;
                       final date = await showDatePicker(
                         context: context,
-                        initialDate: _deadline ?? DateTime.now(),
-                        firstDate: DateTime.now(),
+                        initialDate: initialDate,
+                        firstDate: firstDate,
                         lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
                       );
                       if (date != null) setState(() => _deadline = date);
@@ -123,7 +162,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
               builder: (context, snapshot) {
                 final goals = snapshot.data ?? [];
                 return DropdownButtonFormField<String?>(
-                  value: _goalId,
+                  initialValue: _goalId,
                   decoration: const InputDecoration(labelText: 'Goal (optional)', border: OutlineInputBorder()),
                   items: [
                     const DropdownMenuItem(value: null, child: Text('No goal')),
@@ -152,15 +191,49 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       name: _nameController.text.trim(),
       goalId: _goalId,
       priority: _priority,
+      starttime: _starttime,
       deadline: _deadline,
       estimatedDurationMinutes: _existingTask?.estimatedDurationMinutes,
       effortLevel: _effortLevel,
       status: _existingTask?.status ?? TaskStatus.todo,
+      gotRewards: _existingTask?.gotRewards ?? false,
+      rewardCoins: RewardService.calcStaticReward(_priority, _effortLevel),
       createdAt: _existingTask?.createdAt ?? now,
       updatedAt: now,
     );
     final repo = ref.read(taskRepositoryProvider);
     if (_isEditing) { await repo.updateTask(task); } else { await repo.createTask(task); }
-    if (mounted) context.pop();
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(
+                _isEditing ? Icons.task_alt : Icons.add_task,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 12),
+              Text(_isEditing ? 'Task Updated' : 'Task Created'),
+            ],
+          ),
+          content: Text(
+            'The task "${task.name}" has been successfully ${_isEditing ? "updated" : "created"}.',
+            style: const TextStyle(fontSize: 16),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                if (mounted) context.pop();
+              },
+              child: const Text('Done'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 }

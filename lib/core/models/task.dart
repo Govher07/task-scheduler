@@ -11,10 +11,13 @@ class Task with _$Task {
     required String name,
     String? goalId,
     @Default(Priority.medium) Priority priority,
+    DateTime? starttime,
     DateTime? deadline,
     int? estimatedDurationMinutes,
     @Default(EffortLevel.medium) EffortLevel effortLevel,
     @Default(TaskStatus.todo) TaskStatus status,
+    @Default(false) bool gotRewards,
+    @Default(10) int rewardCoins,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Task;

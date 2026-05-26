@@ -25,6 +25,10 @@ mixin _$Goal {
   String get name => throw _privateConstructorUsedError;
   GoalType get type => throw _privateConstructorUsedError;
   String? get description => throw _privateConstructorUsedError;
+  DateTime? get starttime => throw _privateConstructorUsedError;
+  DateTime? get deadline => throw _privateConstructorUsedError;
+  bool get gotRewards => throw _privateConstructorUsedError;
+  int get rewardCoins => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -47,6 +51,10 @@ abstract class $GoalCopyWith<$Res> {
     String name,
     GoalType type,
     String? description,
+    DateTime? starttime,
+    DateTime? deadline,
+    bool gotRewards,
+    int rewardCoins,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -71,6 +79,10 @@ class _$GoalCopyWithImpl<$Res, $Val extends Goal>
     Object? name = null,
     Object? type = null,
     Object? description = freezed,
+    Object? starttime = freezed,
+    Object? deadline = freezed,
+    Object? gotRewards = null,
+    Object? rewardCoins = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -92,6 +104,22 @@ class _$GoalCopyWithImpl<$Res, $Val extends Goal>
                 ? _value.description
                 : description // ignore: cast_nullable_to_non_nullable
                       as String?,
+            starttime: freezed == starttime
+                ? _value.starttime
+                : starttime // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            deadline: freezed == deadline
+                ? _value.deadline
+                : deadline // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            gotRewards: null == gotRewards
+                ? _value.gotRewards
+                : gotRewards // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            rewardCoins: null == rewardCoins
+                ? _value.rewardCoins
+                : rewardCoins // ignore: cast_nullable_to_non_nullable
+                      as int,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -119,6 +147,10 @@ abstract class _$$GoalImplCopyWith<$Res> implements $GoalCopyWith<$Res> {
     String name,
     GoalType type,
     String? description,
+    DateTime? starttime,
+    DateTime? deadline,
+    bool gotRewards,
+    int rewardCoins,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -140,6 +172,10 @@ class __$$GoalImplCopyWithImpl<$Res>
     Object? name = null,
     Object? type = null,
     Object? description = freezed,
+    Object? starttime = freezed,
+    Object? deadline = freezed,
+    Object? gotRewards = null,
+    Object? rewardCoins = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -161,6 +197,22 @@ class __$$GoalImplCopyWithImpl<$Res>
             ? _value.description
             : description // ignore: cast_nullable_to_non_nullable
                   as String?,
+        starttime: freezed == starttime
+            ? _value.starttime
+            : starttime // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        deadline: freezed == deadline
+            ? _value.deadline
+            : deadline // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        gotRewards: null == gotRewards
+            ? _value.gotRewards
+            : gotRewards // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        rewardCoins: null == rewardCoins
+            ? _value.rewardCoins
+            : rewardCoins // ignore: cast_nullable_to_non_nullable
+                  as int,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -182,6 +234,10 @@ class _$GoalImpl implements _Goal {
     required this.name,
     this.type = GoalType.completable,
     this.description,
+    this.starttime,
+    this.deadline,
+    this.gotRewards = false,
+    this.rewardCoins = 50,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -199,13 +255,23 @@ class _$GoalImpl implements _Goal {
   @override
   final String? description;
   @override
+  final DateTime? starttime;
+  @override
+  final DateTime? deadline;
+  @override
+  @JsonKey()
+  final bool gotRewards;
+  @override
+  @JsonKey()
+  final int rewardCoins;
+  @override
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'Goal(id: $id, name: $name, type: $type, description: $description, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Goal(id: $id, name: $name, type: $type, description: $description, starttime: $starttime, deadline: $deadline, gotRewards: $gotRewards, rewardCoins: $rewardCoins, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -218,6 +284,14 @@ class _$GoalImpl implements _Goal {
             (identical(other.type, type) || other.type == type) &&
             (identical(other.description, description) ||
                 other.description == description) &&
+            (identical(other.starttime, starttime) ||
+                other.starttime == starttime) &&
+            (identical(other.deadline, deadline) ||
+                other.deadline == deadline) &&
+            (identical(other.gotRewards, gotRewards) ||
+                other.gotRewards == gotRewards) &&
+            (identical(other.rewardCoins, rewardCoins) ||
+                other.rewardCoins == rewardCoins) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -232,6 +306,10 @@ class _$GoalImpl implements _Goal {
     name,
     type,
     description,
+    starttime,
+    deadline,
+    gotRewards,
+    rewardCoins,
     createdAt,
     updatedAt,
   );
@@ -256,6 +334,10 @@ abstract class _Goal implements Goal {
     required final String name,
     final GoalType type,
     final String? description,
+    final DateTime? starttime,
+    final DateTime? deadline,
+    final bool gotRewards,
+    final int rewardCoins,
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _$GoalImpl;
@@ -270,6 +352,14 @@ abstract class _Goal implements Goal {
   GoalType get type;
   @override
   String? get description;
+  @override
+  DateTime? get starttime;
+  @override
+  DateTime? get deadline;
+  @override
+  bool get gotRewards;
+  @override
+  int get rewardCoins;
   @override
   DateTime get createdAt;
   @override

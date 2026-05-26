@@ -11,6 +11,10 @@ class Goal with _$Goal {
     required String name,
     @Default(GoalType.completable) GoalType type,
     String? description,
+    DateTime? starttime,
+    DateTime? deadline,
+    @Default(false) bool gotRewards,
+    @Default(50) int rewardCoins,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Goal;

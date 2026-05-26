@@ -14,6 +14,14 @@ class SupabaseGoalRepository implements GoalRepository {
       name: row['name'] as String,
       type: GoalType.values.byName(row['type'] as String),
       description: row['description'] as String?,
+      starttime: row['starttime'] != null
+          ? DateTime.parse(row['starttime'] as String)
+          : null,
+      deadline: row['deadline'] != null
+          ? DateTime.parse(row['deadline'] as String)
+          : null,
+      gotRewards: row['got_rewards'] as bool? ?? false,
+      rewardCoins: row['reward_coins'] as int? ?? 50,
       createdAt: DateTime.parse(row['created_at'] as String),
       updatedAt: DateTime.parse(row['updated_at'] as String),
     );
@@ -25,6 +33,11 @@ class SupabaseGoalRepository implements GoalRepository {
       'name': goal.name,
       'type': goal.type.name,
       'description': goal.description,
+      'starttime': goal.starttime?.toIso8601String(),
+      'deadline': goal.deadline?.toIso8601String(),
+      'got_rewards': goal.gotRewards,
+      'reward_coins': goal.rewardCoins,
+      'user_id': _client.auth.currentUser?.id,
       'created_at': goal.createdAt.toIso8601String(),
       'updated_at': goal.updatedAt.toIso8601String(),
     };

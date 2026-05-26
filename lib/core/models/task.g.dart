@@ -13,6 +13,9 @@ _$TaskImpl _$$TaskImplFromJson(Map<String, dynamic> json) => _$TaskImpl(
   priority:
       $enumDecodeNullable(_$PriorityEnumMap, json['priority']) ??
       Priority.medium,
+  starttime: json['starttime'] == null
+      ? null
+      : DateTime.parse(json['starttime'] as String),
   deadline: json['deadline'] == null
       ? null
       : DateTime.parse(json['deadline'] as String),
@@ -23,6 +26,8 @@ _$TaskImpl _$$TaskImplFromJson(Map<String, dynamic> json) => _$TaskImpl(
   status:
       $enumDecodeNullable(_$TaskStatusEnumMap, json['status']) ??
       TaskStatus.todo,
+  gotRewards: json['gotRewards'] as bool? ?? false,
+  rewardCoins: (json['rewardCoins'] as num?)?.toInt() ?? 10,
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),
 );
@@ -33,10 +38,13 @@ Map<String, dynamic> _$$TaskImplToJson(_$TaskImpl instance) =>
       'name': instance.name,
       'goalId': instance.goalId,
       'priority': _$PriorityEnumMap[instance.priority]!,
+      'starttime': instance.starttime?.toIso8601String(),
       'deadline': instance.deadline?.toIso8601String(),
       'estimatedDurationMinutes': instance.estimatedDurationMinutes,
       'effortLevel': _$EffortLevelEnumMap[instance.effortLevel]!,
       'status': _$TaskStatusEnumMap[instance.status]!,
+      'gotRewards': instance.gotRewards,
+      'rewardCoins': instance.rewardCoins,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };

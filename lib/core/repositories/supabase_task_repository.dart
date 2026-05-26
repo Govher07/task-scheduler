@@ -14,12 +14,17 @@ class SupabaseTaskRepository implements TaskRepository {
       name: row['name'] as String,
       goalId: row['goal_id'] as String?,
       priority: Priority.values.byName(row['priority'] as String),
+      starttime: row['starttime'] != null
+          ? DateTime.parse(row['starttime'] as String)
+          : null,
       deadline: row['deadline'] != null
           ? DateTime.parse(row['deadline'] as String)
           : null,
       estimatedDurationMinutes: row['estimated_duration_minutes'] as int?,
       effortLevel: EffortLevel.values.byName(row['effort_level'] as String),
       status: TaskStatus.values.byName(row['status'] as String),
+      gotRewards: row['got_rewards'] as bool? ?? false,
+      rewardCoins: row['reward_coins'] as int? ?? 10,
       createdAt: DateTime.parse(row['created_at'] as String),
       updatedAt: DateTime.parse(row['updated_at'] as String),
     );
@@ -31,10 +36,14 @@ class SupabaseTaskRepository implements TaskRepository {
       'name': task.name,
       'goal_id': task.goalId,
       'priority': task.priority.name,
+      'starttime': task.starttime?.toIso8601String(),
       'deadline': task.deadline?.toIso8601String(),
       'estimated_duration_minutes': task.estimatedDurationMinutes,
       'effort_level': task.effortLevel.name,
       'status': task.status.name,
+      'got_rewards': task.gotRewards,
+      'reward_coins': task.rewardCoins,
+      'user_id': _client.auth.currentUser?.id,
       'created_at': task.createdAt.toIso8601String(),
       'updated_at': task.updatedAt.toIso8601String(),
     };

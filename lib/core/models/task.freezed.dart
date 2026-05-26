@@ -25,10 +25,13 @@ mixin _$Task {
   String get name => throw _privateConstructorUsedError;
   String? get goalId => throw _privateConstructorUsedError;
   Priority get priority => throw _privateConstructorUsedError;
+  DateTime? get starttime => throw _privateConstructorUsedError;
   DateTime? get deadline => throw _privateConstructorUsedError;
   int? get estimatedDurationMinutes => throw _privateConstructorUsedError;
   EffortLevel get effortLevel => throw _privateConstructorUsedError;
   TaskStatus get status => throw _privateConstructorUsedError;
+  bool get gotRewards => throw _privateConstructorUsedError;
+  int get rewardCoins => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -51,10 +54,13 @@ abstract class $TaskCopyWith<$Res> {
     String name,
     String? goalId,
     Priority priority,
+    DateTime? starttime,
     DateTime? deadline,
     int? estimatedDurationMinutes,
     EffortLevel effortLevel,
     TaskStatus status,
+    bool gotRewards,
+    int rewardCoins,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -79,10 +85,13 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
     Object? name = null,
     Object? goalId = freezed,
     Object? priority = null,
+    Object? starttime = freezed,
     Object? deadline = freezed,
     Object? estimatedDurationMinutes = freezed,
     Object? effortLevel = null,
     Object? status = null,
+    Object? gotRewards = null,
+    Object? rewardCoins = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -104,6 +113,10 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
                 ? _value.priority
                 : priority // ignore: cast_nullable_to_non_nullable
                       as Priority,
+            starttime: freezed == starttime
+                ? _value.starttime
+                : starttime // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
             deadline: freezed == deadline
                 ? _value.deadline
                 : deadline // ignore: cast_nullable_to_non_nullable
@@ -120,6 +133,14 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
                 ? _value.status
                 : status // ignore: cast_nullable_to_non_nullable
                       as TaskStatus,
+            gotRewards: null == gotRewards
+                ? _value.gotRewards
+                : gotRewards // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            rewardCoins: null == rewardCoins
+                ? _value.rewardCoins
+                : rewardCoins // ignore: cast_nullable_to_non_nullable
+                      as int,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -147,10 +168,13 @@ abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
     String name,
     String? goalId,
     Priority priority,
+    DateTime? starttime,
     DateTime? deadline,
     int? estimatedDurationMinutes,
     EffortLevel effortLevel,
     TaskStatus status,
+    bool gotRewards,
+    int rewardCoins,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -172,10 +196,13 @@ class __$$TaskImplCopyWithImpl<$Res>
     Object? name = null,
     Object? goalId = freezed,
     Object? priority = null,
+    Object? starttime = freezed,
     Object? deadline = freezed,
     Object? estimatedDurationMinutes = freezed,
     Object? effortLevel = null,
     Object? status = null,
+    Object? gotRewards = null,
+    Object? rewardCoins = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -197,6 +224,10 @@ class __$$TaskImplCopyWithImpl<$Res>
             ? _value.priority
             : priority // ignore: cast_nullable_to_non_nullable
                   as Priority,
+        starttime: freezed == starttime
+            ? _value.starttime
+            : starttime // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
         deadline: freezed == deadline
             ? _value.deadline
             : deadline // ignore: cast_nullable_to_non_nullable
@@ -213,6 +244,14 @@ class __$$TaskImplCopyWithImpl<$Res>
             ? _value.status
             : status // ignore: cast_nullable_to_non_nullable
                   as TaskStatus,
+        gotRewards: null == gotRewards
+            ? _value.gotRewards
+            : gotRewards // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        rewardCoins: null == rewardCoins
+            ? _value.rewardCoins
+            : rewardCoins // ignore: cast_nullable_to_non_nullable
+                  as int,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -234,10 +273,13 @@ class _$TaskImpl implements _Task {
     required this.name,
     this.goalId,
     this.priority = Priority.medium,
+    this.starttime,
     this.deadline,
     this.estimatedDurationMinutes,
     this.effortLevel = EffortLevel.medium,
     this.status = TaskStatus.todo,
+    this.gotRewards = false,
+    this.rewardCoins = 10,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -255,6 +297,8 @@ class _$TaskImpl implements _Task {
   @JsonKey()
   final Priority priority;
   @override
+  final DateTime? starttime;
+  @override
   final DateTime? deadline;
   @override
   final int? estimatedDurationMinutes;
@@ -265,13 +309,19 @@ class _$TaskImpl implements _Task {
   @JsonKey()
   final TaskStatus status;
   @override
+  @JsonKey()
+  final bool gotRewards;
+  @override
+  @JsonKey()
+  final int rewardCoins;
+  @override
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'Task(id: $id, name: $name, goalId: $goalId, priority: $priority, deadline: $deadline, estimatedDurationMinutes: $estimatedDurationMinutes, effortLevel: $effortLevel, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Task(id: $id, name: $name, goalId: $goalId, priority: $priority, starttime: $starttime, deadline: $deadline, estimatedDurationMinutes: $estimatedDurationMinutes, effortLevel: $effortLevel, status: $status, gotRewards: $gotRewards, rewardCoins: $rewardCoins, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -284,6 +334,8 @@ class _$TaskImpl implements _Task {
             (identical(other.goalId, goalId) || other.goalId == goalId) &&
             (identical(other.priority, priority) ||
                 other.priority == priority) &&
+            (identical(other.starttime, starttime) ||
+                other.starttime == starttime) &&
             (identical(other.deadline, deadline) ||
                 other.deadline == deadline) &&
             (identical(
@@ -294,6 +346,10 @@ class _$TaskImpl implements _Task {
             (identical(other.effortLevel, effortLevel) ||
                 other.effortLevel == effortLevel) &&
             (identical(other.status, status) || other.status == status) &&
+            (identical(other.gotRewards, gotRewards) ||
+                other.gotRewards == gotRewards) &&
+            (identical(other.rewardCoins, rewardCoins) ||
+                other.rewardCoins == rewardCoins) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -308,10 +364,13 @@ class _$TaskImpl implements _Task {
     name,
     goalId,
     priority,
+    starttime,
     deadline,
     estimatedDurationMinutes,
     effortLevel,
     status,
+    gotRewards,
+    rewardCoins,
     createdAt,
     updatedAt,
   );
@@ -336,10 +395,13 @@ abstract class _Task implements Task {
     required final String name,
     final String? goalId,
     final Priority priority,
+    final DateTime? starttime,
     final DateTime? deadline,
     final int? estimatedDurationMinutes,
     final EffortLevel effortLevel,
     final TaskStatus status,
+    final bool gotRewards,
+    final int rewardCoins,
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _$TaskImpl;
@@ -355,6 +417,8 @@ abstract class _Task implements Task {
   @override
   Priority get priority;
   @override
+  DateTime? get starttime;
+  @override
   DateTime? get deadline;
   @override
   int? get estimatedDurationMinutes;
@@ -362,6 +426,10 @@ abstract class _Task implements Task {
   EffortLevel get effortLevel;
   @override
   TaskStatus get status;
+  @override
+  bool get gotRewards;
+  @override
+  int get rewardCoins;
   @override
   DateTime get createdAt;
   @override
