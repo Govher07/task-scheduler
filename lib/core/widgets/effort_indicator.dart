@@ -9,21 +9,29 @@ class EffortIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final Color color;
+
+    switch (level) {
+      case EffortLevel.low:
+        color = colorScheme.primary;
+      case EffortLevel.medium:
+        color = colorScheme.tertiary;
+      case EffortLevel.high:
+        color = colorScheme.error;
+    }
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.bolt, size: 14, color: _color),
+        Icon(Icons.bolt, size: 14, color: color),
         const SizedBox(width: 2),
-        Text(level.name, style: theme.textTheme.labelSmall?.copyWith(color: _color)),
+        Text(
+          level.name,
+          style: theme.textTheme.labelSmall?.copyWith(color: color),
+        ),
       ],
     );
-  }
-
-  Color get _color {
-    switch (level) {
-      case EffortLevel.low: return Colors.green;
-      case EffortLevel.medium: return Colors.orange;
-      case EffortLevel.high: return Colors.red;
-    }
   }
 }

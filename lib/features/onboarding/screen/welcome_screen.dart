@@ -29,7 +29,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     if (!mounted) return;
 
     if (hasSeenWelcome && !widget.forceShow) {
-      context.go('/goals');
+      context.go('/home');
       return;
     }
 
@@ -43,7 +43,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     await prefs.setBool(WelcomeScreen.seenWelcomeKey, true);
 
     if (!mounted) return;
-    context.go('/goals');
+     context.go('/home');
   }
 
   @override

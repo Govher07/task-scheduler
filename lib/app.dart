@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'features/calendar/screens/calendar_screen.dart';
 import 'features/calendar/screens/event_form_screen.dart';
@@ -18,7 +17,7 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/goals',
+  initialLocation: '/home',
   redirect: (context, state) async {
     final prefs = await SharedPreferences.getInstance();
     final hasSeenWelcome =
@@ -32,7 +31,7 @@ final router = GoRouter(
     }
 
     if (hasSeenWelcome && isGoingToWelcome && !forceWelcome) {
-      return '/goals';
+      return '/home';
     }
 
     return null;
@@ -45,15 +44,14 @@ final router = GoRouter(
         forceShow: state.uri.queryParameters['force'] == 'true',
       ),
     ),
-
     ShellRoute(
       navigatorKey: _shellNavigatorKey,
       builder: (context, state, child) => AppShell(child: child),
       routes: [
         GoRoute(
-          path: '/goals',
+          path: '/home',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: GoalsScreen(),
+            child: RecommenderScreen(),
           ),
         ),
         GoRoute(
@@ -63,17 +61,13 @@ final router = GoRouter(
           ),
         ),
         GoRoute(
-          path: '/recommend',
-          pageBuilder: (context, state) => NoTransitionPage(
-            child: Theme(
-              data: AppTheme.lightTheme,
-              child: const RecommenderScreen(),
-            ),
+          path: '/goals',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: GoalsScreen(),
           ),
         ),
       ],
     ),
-
     GoRoute(
       path: '/goals/task/new',
       parentNavigatorKey: _rootNavigatorKey,
@@ -128,13 +122,12 @@ class TaskSchedulerApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedTheme = ref.watch(moodThemeProvider);
+    final theme = MoodThemes.themeFor(selectedTheme);
 
     return MaterialApp.router(
       title: 'Task Scheduler',
-      theme: MoodThemes.themeFor(selectedTheme),
-      darkTheme: AppTheme.darkTheme,
-      themeMode:
-          selectedTheme == MoodTheme.night ? ThemeMode.dark : ThemeMode.light,
+      theme: theme,
+      themeMode: ThemeMode.light,
       routerConfig: router,
     );
   }
@@ -157,9 +150,9 @@ class AppShell extends StatelessWidget {
         onDestinationSelected: (index) => _onItemTapped(index, context),
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.flag_outlined),
-            selectedIcon: Icon(Icons.flag),
-            label: 'My Goals',
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
           ),
           NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
@@ -167,9 +160,9 @@ class AppShell extends StatelessWidget {
             label: 'My Calendar',
           ),
           NavigationDestination(
-            icon: Icon(Icons.lightbulb_outlined),
-            selectedIcon: Icon(Icons.lightbulb),
-            label: 'Recommend',
+            icon: Icon(Icons.flag_outlined),
+            selectedIcon: Icon(Icons.flag),
+            label: 'My Goals',
           ),
         ],
       ),
@@ -179,9 +172,9 @@ class AppShell extends StatelessWidget {
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
 
-    if (location.startsWith('/goals')) return 0;
+    if (location.startsWith('/home')) return 0;
     if (location.startsWith('/calendar')) return 1;
-    if (location.startsWith('/recommend')) return 2;
+    if (location.startsWith('/goals')) return 2;
 
     return 0;
   }
@@ -189,11 +182,11 @@ class AppShell extends StatelessWidget {
   void _onItemTapped(int index, BuildContext context) {
     switch (index) {
       case 0:
-        context.go('/goals');
+        context.go('/home');
       case 1:
         context.go('/calendar');
       case 2:
-        context.go('/recommend');
+        context.go('/goals');
     }
   }
 }
