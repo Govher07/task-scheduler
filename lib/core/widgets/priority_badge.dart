@@ -8,24 +8,37 @@ class PriorityBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final Color foregroundColor;
+    final Color backgroundColor;
+
+    switch (priority) {
+      case Priority.high:
+        foregroundColor = colorScheme.error;
+        backgroundColor = colorScheme.errorContainer;
+      case Priority.medium:
+        foregroundColor = colorScheme.tertiary;
+        backgroundColor = colorScheme.tertiaryContainer;
+      case Priority.low:
+        foregroundColor = colorScheme.primary;
+        backgroundColor = colorScheme.primaryContainer;
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: _color.withOpacity(0.15),
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         priority.name.toUpperCase(),
-        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _color),
+        style: theme.textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: foregroundColor,
+        ),
       ),
     );
   }
-
-  Color get _color {
-    switch (priority) {
-      case Priority.high: return Colors.red;
-      case Priority.medium: return Colors.orange;
-      case Priority.low: return Colors.green;
-    }
-  }
-}
+} 

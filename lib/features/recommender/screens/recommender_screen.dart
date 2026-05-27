@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../../core/models/enums.dart';
+import '../../../core/models/task.dart';
 import '../../../core/providers.dart';
-import '../../../core/widgets/priority_badge.dart';
+import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/effort_indicator.dart';
-import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/priority_badge.dart';
 import '../providers/recommender_provider.dart';
+
+final rewardBalanceProvider = FutureProvider<int>((ref) async {
+  return ref.watch(rewardServiceProvider).getBalance();
+});
 
 class RecommenderScreen extends ConsumerWidget {
   const RecommenderScreen({super.key});
@@ -15,115 +23,634 @@ class RecommenderScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tasksAsync = ref.watch(allTasksProvider);
     final recommended = ref.watch(recommendedTaskProvider);
+    final balanceAsync = ref.watch(rewardBalanceProvider);
+
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Recommend')),
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        title: const Text('Home'),
+        centerTitle: true,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+        elevation: 0,
+        leading: IconButton(
+          tooltip: 'Change theme',
+          icon: const Icon(Icons.palette_outlined),
+          onPressed: () => _showThemePicker(context),
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Log out',
+            icon: const Icon(Icons.logout),
+            onPressed: () => _logout(context),
+          ),
+        ],
+      ),
       body: tasksAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error: $err')),
-        data: (_) {
-          if (recommended == null) {
-            return const EmptyState(
-              icon: Icons.lightbulb_outline,
-              title: 'Nothing to recommend',
-              subtitle: 'All tasks are done or skipped.',
-            );
-          }
+        loading: () => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        error: (err, _) => Center(
+          child: Text(
+            'Error: $err',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.error,
+            ),
+          ),
+        ),
+        data: (tasks) {
+          final completedTasks =
+              tasks.where((task) => task.status == TaskStatus.done).length;
 
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
+          final inProgressTasks = tasks
+              .where((task) => task.status == TaskStatus.inProgress)
+              .length;
+
+          final coinBalance = balanceAsync.valueOrNull ?? 0;
+
+          return SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight - 16,
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 360),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _RewardsSection(
+                              coinBalance: coinBalance,
+                              completedTasks: completedTasks,
+                              inProgressTasks: inProgressTasks,
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            recommended == null
+                                ? const _NoRecommendationCard()
+                                : _RecommendedTaskCard(
+                                    recommended: recommended,
+                                    onSkip: () {
+                                      final current =
+                                          ref.read(skippedTaskIdsProvider);
+
+                                      ref
+                                          .read(
+                                            skippedTaskIdsProvider.notifier,
+                                          )
+                                          .state = {
+                                        ...current,
+                                        recommended.id,
+                                      };
+                                    },
+                                    onStart: () async {
+                                      final repo =
+                                          ref.read(taskRepositoryProvider);
+
+                                      await repo.updateTask(
+                                        recommended.copyWith(
+                                          status: TaskStatus.inProgress,
+                                          updatedAt: DateTime.now(),
+                                        ),
+                                      );
+
+                                      ref.invalidate(allTasksProvider);
+                                      ref.invalidate(recommendedTaskProvider);
+
+                                      if (!context.mounted) return;
+
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Started "${recommended.name}"',
+                                          ),
+                                        ),
+                                      );
+
+                                      context.go('/goals');
+                                    },
+                                    onDone: () async {
+                                      await _markTaskDoneAndGrantRewards(
+                                        ref,
+                                        recommended,
+                                      );
+
+                                      ref.invalidate(allTasksProvider);
+                                      ref.invalidate(recommendedTaskProvider);
+                                      ref.invalidate(rewardBalanceProvider);
+                                    },
+                                  ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _markTaskDoneAndGrantRewards(
+    WidgetRef ref,
+    Task task,
+  ) async {
+    final taskRepo = ref.read(taskRepositoryProvider);
+    final rewardService = ref.read(rewardServiceProvider);
+    final now = DateTime.now();
+
+    if (task.status == TaskStatus.done) {
+      return;
+    }
+
+    if (!task.gotRewards) {
+      await rewardService.grantTaskReward(task);
+
+      await taskRepo.updateTask(
+        task.copyWith(
+          status: TaskStatus.done,
+          gotRewards: true,
+          updatedAt: now,
+        ),
+      );
+    } else {
+      await taskRepo.updateTask(
+        task.copyWith(
+          status: TaskStatus.done,
+          updatedAt: now,
+        ),
+      );
+    }
+
+    if (task.goalId == null) {
+      return;
+    }
+
+    final goalTasks = await taskRepo.getTasksByGoalId(task.goalId!);
+
+    final updatedGoalTasks = goalTasks.map((goalTask) {
+      if (goalTask.id == task.id) {
+        return goalTask.copyWith(status: TaskStatus.done);
+      }
+
+      return goalTask;
+    }).toList();
+
+    final allDone = updatedGoalTasks.isNotEmpty &&
+        updatedGoalTasks.every(
+          (goalTask) => goalTask.status == TaskStatus.done,
+        );
+
+    if (!allDone) {
+      return;
+    }
+
+    final goalRepo = ref.read(goalRepositoryProvider);
+    final goal = await goalRepo.getGoalById(task.goalId!);
+
+    if (goal != null && !goal.gotRewards) {
+      await rewardService.grantGoalReward(goal, updatedGoalTasks.length);
+    }
+  }
+
+  void _showThemePicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, _) {
+            final selectedTheme = ref.watch(moodThemeProvider);
+
+            return SafeArea(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                children: MoodTheme.values.map((theme) {
+                  final isSelected = theme == selectedTheme;
+
+                  return ListTile(
+                    leading: Icon(
+                      isSelected
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_off,
+                    ),
+                    title: Text(theme.label),
+                    onTap: () {
+                      ref.read(moodThemeProvider.notifier).setTheme(theme);
+                      Navigator.pop(context);
+                    },
+                  );
+                }).toList(),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    await Supabase.instance.client.auth.signOut();
+
+    if (!context.mounted) return;
+
+    context.go('/login');
+  }
+}
+
+class _RewardsSection extends StatelessWidget {
+  const _RewardsSection({
+    required this.coinBalance,
+    required this.completedTasks,
+    required this.inProgressTasks,
+  });
+
+  final int coinBalance;
+  final int completedTasks;
+  final int inProgressTasks;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        color: colorScheme.primaryContainer,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
                 children: [
-                  Icon(Icons.lightbulb, size: 48, color: theme.colorScheme.primary),
-                  const SizedBox(height: 12),
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.emoji_events,
+                      size: 20,
+                      color: colorScheme.onPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Rewards',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      context.go('/gaming');
+                    },
+                    icon: const Icon(Icons.storefront_outlined, size: 18),
+                    label: const Text('Shop'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _RewardStat(
+                      icon: Icons.monetization_on_outlined,
+                      label: 'Balance',
+                      value: coinBalance.toString(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _RewardStat(
+                      icon: Icons.check_circle_outline,
+                      label: 'Done',
+                      value: completedTasks.toString(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _RewardStat(
+                      icon: Icons.play_circle_outline,
+                      label: 'Active',
+                      value: inProgressTasks.toString(),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RewardStat extends StatelessWidget {
+  const _RewardStat({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: colorScheme.surface.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: colorScheme.outlineVariant,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: colorScheme.primary,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NoRecommendationCard extends StatelessWidget {
+  const _NoRecommendationCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      color: colorScheme.surfaceContainerHighest,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.lightbulb_outline,
+              size: 40,
+              color: colorScheme.primary,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Nothing to recommend',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'All tasks are done or skipped.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RecommendedTaskCard extends StatelessWidget {
+  const _RecommendedTaskCard({
+    required this.recommended,
+    required this.onSkip,
+    required this.onStart,
+    required this.onDone,
+  });
+
+  final Task recommended;
+  final VoidCallback onSkip;
+  final VoidCallback onStart;
+  final VoidCallback onDone;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.lightbulb,
+          size: 34,
+          color: colorScheme.primary,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'You should work on:',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: Card(
+            color: colorScheme.surfaceContainerHighest,
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
                   Text(
-                    'You should work on:',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: theme.colorScheme.outline,
+                    recommended.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            recommended.name,
-                            style: theme.textTheme.headlineSmall,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            alignment: WrapAlignment.center,
-                            children: [
-                              PriorityBadge(priority: recommended.priority),
-                              EffortIndicator(level: recommended.effortLevel),
-                              if (recommended.deadline != null)
-                                Chip(
-                                  label: Text(
-                                    'Due ${DateFormat('MMM d').format(recommended.deadline!)}',
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
                     children: [
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.skip_next),
-                        label: const Text('Skip'),
-                        onPressed: () {
-                          final current = ref.read(skippedTaskIdsProvider);
-                          ref.read(skippedTaskIdsProvider.notifier).state = {
-                            ...current,
-                            recommended.id,
-                          };
-                        },
+                      PriorityBadge(
+                        priority: recommended.priority,
                       ),
-                      const SizedBox(width: 12),
-                      FilledButton.icon(
-                        icon: const Icon(Icons.play_arrow),
-                        label: const Text('Start'),
-                        onPressed: () async {
-                          final repo = ref.read(taskRepositoryProvider);
-                          await repo.updateTask(
-                            recommended.copyWith(status: TaskStatus.inProgress),
-                          );
-                          ref.invalidate(allTasksProvider);
-                        },
+                      EffortIndicator(
+                        level: recommended.effortLevel,
                       ),
-                      const SizedBox(width: 12),
-                      FilledButton.tonalIcon(
-                        icon: const Icon(Icons.check),
-                        label: const Text('Done'),
-                        onPressed: () async {
-                          final repo = ref.read(taskRepositoryProvider);
-                          await repo.updateTask(
-                            recommended.copyWith(status: TaskStatus.done),
-                          );
-                          ref.invalidate(allTasksProvider);
-                        },
-                      ),
+                      if (recommended.deadline != null)
+                        Chip(
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          backgroundColor: colorScheme.secondaryContainer,
+                          labelStyle: theme.textTheme.labelMedium?.copyWith(
+                            color: colorScheme.onSecondaryContainer,
+                          ),
+                          label: Text(
+                            'Due ${DateFormat('MMM d').format(recommended.deadline!)}',
+                          ),
+                        ),
+                      _RewardPreviewChip(task: recommended),
                     ],
                   ),
                 ],
               ),
             ),
-          );
-        },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: 40,
+              child: FilledButton.icon(
+                icon: const Icon(Icons.play_arrow, size: 18),
+                label: const Text('Start'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                ),
+                onPressed: onStart,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.skip_next, size: 18),
+                      label: const Text('Skip'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 40),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      onPressed: onSkip,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: FilledButton.tonalIcon(
+                      icon: const Icon(Icons.check, size: 18),
+                      label: const Text('Done'),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 40),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      onPressed: onDone,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _RewardPreviewChip extends StatelessWidget {
+  const _RewardPreviewChip({
+    required this.task,
+  });
+
+  final Task task;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Chip(
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      avatar: Icon(
+        Icons.monetization_on_outlined,
+        size: 16,
+        color: colorScheme.onTertiaryContainer,
       ),
+      backgroundColor: colorScheme.tertiaryContainer,
+      labelStyle: theme.textTheme.labelMedium?.copyWith(
+        color: colorScheme.onTertiaryContainer,
+      ),
+      label: Text('${task.rewardCoins} coins'),
     );
   }
 }
