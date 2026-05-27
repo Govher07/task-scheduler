@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/register_screen.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'features/calendar/screens/calendar_screen.dart';
@@ -26,14 +29,26 @@ final router = GoRouter(
     final prefs = await SharedPreferences.getInstance();
     final hasSeenWelcome = prefs.getBool(WelcomeScreen.seenWelcomeKey) ?? false;
 
-    final isGoingToWelcome = state.uri.path == '/welcome';
+    final path = state.uri.path;
+    final isGoingToWelcome = path == '/welcome';
     final forceWelcome = state.uri.queryParameters['force'] == 'true';
+
+    final isAuthRoute = path == '/login' || path == '/register';
+    final isLoggedIn = Supabase.instance.client.auth.currentSession != null;
 
     if (!hasSeenWelcome && !isGoingToWelcome) {
       return '/welcome';
     }
 
     if (hasSeenWelcome && isGoingToWelcome && !forceWelcome) {
+      return isLoggedIn ? '/home' : '/login';
+    }
+
+    if (!isLoggedIn && !isAuthRoute && !isGoingToWelcome) {
+      return '/login';
+    }
+
+    if (isLoggedIn && isAuthRoute) {
       return '/home';
     }
 
@@ -46,6 +61,17 @@ final router = GoRouter(
       builder: (context, state) => WelcomeScreen(
         forceShow: state.uri.queryParameters['force'] == 'true',
       ),
+    ),
+
+    GoRoute(
+      path: '/login',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/register',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const RegisterScreen(),
     ),
     ShellRoute(
       navigatorKey: _shellNavigatorKey,

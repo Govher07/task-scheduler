@@ -8,7 +8,7 @@ import '../providers/goals_provider.dart';
 import '../widgets/goal_section.dart';
 import '../widgets/sort_controls.dart';
 import '../widgets/task_tile.dart';
-import '../../../core/theme/theme_controller.dart';
+
 
 class GoalsScreen extends ConsumerWidget {
   const GoalsScreen({super.key});
@@ -20,11 +20,6 @@ class GoalsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Change theme',
-          icon: const Icon(Icons.palette_outlined),
-          onPressed: () => _showThemePicker(context),
-        ),
         title: const Text('My Goals'),
       ),
       body: goalsAsync.when(
@@ -118,41 +113,6 @@ class GoalsScreen extends ConsumerWidget {
     );
   }
 
-  void _showThemePicker(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    builder: (context) {
-      return Consumer(
-        builder: (context, ref, _) {
-          final selectedTheme = ref.watch(moodThemeProvider);
-
-          return SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: MoodTheme.values.map((theme) {
-                final isSelected = theme == selectedTheme;
-
-                return ListTile(
-                  leading: Icon(
-                    isSelected
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_off,
-                  ),
-                  title: Text(theme.label),
-                  onTap: () {
-                    ref.read(moodThemeProvider.notifier).setTheme(theme);
-                    Navigator.pop(context);
-                  },
-                );
-              }).toList(),
-            ),
-          );
-        },
-      );
-    },
-  );
-}
-
   void _createGoal(BuildContext context) {
     context.push('/goals/goal/new');
   }
@@ -177,23 +137,32 @@ class GoalsScreen extends ConsumerWidget {
     final now = DateTime.now();
     if (status == TaskStatus.done && !task.gotRewards) {
       await ref.read(rewardServiceProvider).grantTaskReward(task);
-      await ref.read(taskRepositoryProvider).updateTask(
+      await ref
+          .read(taskRepositoryProvider)
+          .updateTask(
             task.copyWith(status: status, gotRewards: true, updatedAt: now),
           );
     } else {
-      await ref.read(taskRepositoryProvider).updateTask(
-            task.copyWith(status: status, updatedAt: now),
-          );
+      await ref
+          .read(taskRepositoryProvider)
+          .updateTask(task.copyWith(status: status, updatedAt: now));
     }
 
     if (task.goalId != null && status == TaskStatus.done) {
-      final goalTasks = await ref.read(taskRepositoryProvider).getTasksByGoalId(task.goalId!);
-      final allDone = goalTasks.isNotEmpty &&
+      final goalTasks = await ref
+          .read(taskRepositoryProvider)
+          .getTasksByGoalId(task.goalId!);
+      final allDone =
+          goalTasks.isNotEmpty &&
           goalTasks.every((t) => t.status == TaskStatus.done);
       if (allDone) {
-        final goal = await ref.read(goalRepositoryProvider).getGoalById(task.goalId!);
+        final goal = await ref
+            .read(goalRepositoryProvider)
+            .getGoalById(task.goalId!);
         if (goal != null && !goal.gotRewards) {
-          await ref.read(rewardServiceProvider).grantGoalReward(goal, goalTasks.length);
+          await ref
+              .read(rewardServiceProvider)
+              .grantGoalReward(goal, goalTasks.length);
         }
       }
     }
