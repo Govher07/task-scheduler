@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/models/event.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/seasonal_background.dart';
 import '../providers/calendar_provider.dart';
 
 class CalendarScreen extends ConsumerWidget {
@@ -13,32 +14,50 @@ class CalendarScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final viewMode = ref.watch(calendarViewModeProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('My Calendar'),
+        centerTitle: true,
+        backgroundColor: colorScheme.surface.withValues(alpha: 0.72),
+        foregroundColor: colorScheme.onSurface,
+        elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: SegmentedButton<CalendarViewMode>(
-              segments: const [
-                ButtonSegment<CalendarViewMode>(
-                  value: CalendarViewMode.monthly,
-                  label: Text('Monthly'),
-                  icon: Icon(Icons.calendar_month),
+            child: SnowCapped(
+              borderRadius: 22,
+              snowHeight: 7,
+              horizontalInset: 3,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colorScheme.surface.withValues(alpha: 0.72),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
-                ButtonSegment<CalendarViewMode>(
-                  value: CalendarViewMode.daily,
-                  label: Text('Daily'),
-                  icon: Icon(Icons.view_day),
+                child: SegmentedButton<CalendarViewMode>(
+                  segments: const [
+                    ButtonSegment<CalendarViewMode>(
+                      value: CalendarViewMode.monthly,
+                      label: Text('Monthly'),
+                      icon: Icon(Icons.calendar_month),
+                    ),
+                    ButtonSegment<CalendarViewMode>(
+                      value: CalendarViewMode.daily,
+                      label: Text('Daily'),
+                      icon: Icon(Icons.view_day),
+                    ),
+                  ],
+                  selected: {viewMode},
+                  onSelectionChanged: (selection) {
+                    ref.read(calendarViewModeProvider.notifier).state =
+                        selection.first;
+                  },
                 ),
-              ],
-              selected: {viewMode},
-              onSelectionChanged: (selection) {
-                ref.read(calendarViewModeProvider.notifier).state =
-                    selection.first;
-              },
+              ),
             ),
           ),
         ),
@@ -113,6 +132,7 @@ class _MonthlyView extends ConsumerWidget {
               },
               onToday: () {
                 final today = DateTime.now();
+
                 ref.read(selectedDateProvider.notifier).state = today;
                 ref.read(focusedMonthProvider.notifier).state = DateTime(
                   today.year,
@@ -139,11 +159,30 @@ class _MonthlyView extends ConsumerWidget {
                   );
                 }
               },
+              onDateDoubleTap: (date) {
+                ref.read(selectedDateProvider.notifier).state = date;
+
+                final isDifferentMonth =
+                    date.year != focusedMonth.year ||
+                    date.month != focusedMonth.month;
+
+                if (isDifferentMonth) {
+                  ref.read(focusedMonthProvider.notifier).state = DateTime(
+                    date.year,
+                    date.month,
+                  );
+                }
+
+                context.go(_newEventPathForDate(date));
+              },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             Text(
               DateFormat('EEEE, MMMM d').format(selectedDate),
-              style: Theme.of(context).textTheme.titleMedium,
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             _SelectedDayEvents(
@@ -186,7 +225,9 @@ class _MonthHeader extends StatelessWidget {
           child: Text(
             monthLabel,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
           ),
         ),
         IconButton(
@@ -210,12 +251,14 @@ class _MonthGrid extends StatelessWidget {
     required this.selectedDate,
     required this.events,
     required this.onDateSelected,
+    required this.onDateDoubleTap,
   });
 
   final DateTime focusedMonth;
   final DateTime selectedDate;
   final List<Event> events;
   final ValueChanged<DateTime> onDateSelected;
+  final ValueChanged<DateTime> onDateDoubleTap;
 
   static const weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -224,35 +267,47 @@ class _MonthGrid extends StatelessWidget {
     final dates = _visibleDatesForMonth(focusedMonth);
     final theme = Theme.of(context);
 
-    return Card(
+    final rowCount = dates.length ~/ 7;
+    const cellHeight = 34.0;
+    const rowSpacing = 1.0;
+    final gridHeight = (rowCount * cellHeight) + ((rowCount - 1) * rowSpacing);
+
+    return SnowCappedCard(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Row(
-              children: weekdays.map((weekday) {
-                return Expanded(
-                  child: Center(
-                    child: Text(
-                      weekday,
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.outline,
-                      ),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      borderRadius: 18,
+      snowHeight: 10,
+      horizontalInset: 2,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: weekdays.map((weekday) {
+              return Expanded(
+                child: Center(
+                  child: Text(
+                    weekday,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.outline,
                     ),
                   ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 8),
-            GridView.builder(
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 4),
+          SizedBox(
+            height: gridHeight,
+            child: GridView.builder(
+              padding: EdgeInsets.zero,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: dates.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
-                mainAxisSpacing: 4,
+                mainAxisSpacing: rowSpacing,
                 crossAxisSpacing: 4,
+                mainAxisExtent: cellHeight,
               ),
               itemBuilder: (context, index) {
                 final date = dates[index];
@@ -270,11 +325,12 @@ class _MonthGrid extends StatelessWidget {
                   isOutsideMonth: isOutsideMonth,
                   hasEvents: hasEvents,
                   onTap: () => onDateSelected(date),
+                  onDoubleTap: () => onDateDoubleTap(date),
                 );
               },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -304,6 +360,7 @@ class _DateCell extends StatelessWidget {
     required this.isOutsideMonth,
     required this.hasEvents,
     required this.onTap,
+    required this.onDoubleTap,
   });
 
   final DateTime date;
@@ -312,6 +369,7 @@ class _DateCell extends StatelessWidget {
   final bool isOutsideMonth;
   final bool hasEvents;
   final VoidCallback onTap;
+  final VoidCallback onDoubleTap;
 
   @override
   Widget build(BuildContext context) {
@@ -331,39 +389,44 @@ class _DateCell extends StatelessWidget {
         ? theme.colorScheme.primary
         : Colors.transparent;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(999),
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          shape: BoxShape.circle,
-          border: Border.all(color: borderColor),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '${date.day}',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: textColor,
-                fontWeight: isSelected ? FontWeight.w600 : null,
+    return Tooltip(
+      message: 'Double-click to add an event',
+      waitDuration: const Duration(milliseconds: 700),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        onDoubleTap: onDoubleTap,
+        child: Container(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            shape: BoxShape.circle,
+            border: Border.all(color: borderColor),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '${date.day}',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: textColor,
+                  fontWeight: isSelected ? FontWeight.w600 : null,
+                ),
               ),
-            ),
-            const SizedBox(height: 3),
-            Container(
-              width: 4,
-              height: 4,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: hasEvents
-                    ? isSelected
-                          ? theme.colorScheme.onPrimary
-                          : theme.colorScheme.primary
-                    : Colors.transparent,
+              const SizedBox(height: 3),
+              Container(
+                width: 4,
+                height: 4,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: hasEvents
+                      ? isSelected
+                            ? theme.colorScheme.onPrimary
+                            : theme.colorScheme.primary
+                      : Colors.transparent,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -392,10 +455,15 @@ class _SelectedDayEvents extends StatelessWidget {
             subtitle: 'No events scheduled for this day.',
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: onAddEvent,
-            icon: const Icon(Icons.add),
-            label: const Text('Add event'),
+          SnowCapped(
+            borderRadius: 22,
+            snowHeight: 7,
+            horizontalInset: 3,
+            child: OutlinedButton.icon(
+              onPressed: onAddEvent,
+              icon: const Icon(Icons.add),
+              label: const Text('Add event'),
+            ),
           ),
         ],
       );
@@ -409,8 +477,12 @@ class _SelectedDayEvents extends StatelessWidget {
           final startTime = timeFormatter.format(event.startTime);
           final endTime = timeFormatter.format(event.endTime);
 
-          return Card(
+          return SnowCappedCard(
             margin: const EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.zero,
+            borderRadius: 18,
+            snowHeight: 10,
+            horizontalInset: 2,
             clipBehavior: Clip.antiAlias,
             child: ListTile(
               onTap: () => onEventTap(event),
@@ -422,10 +494,15 @@ class _SelectedDayEvents extends StatelessWidget {
           );
         }),
         const SizedBox(height: 4),
-        OutlinedButton.icon(
-          onPressed: onAddEvent,
-          icon: const Icon(Icons.add),
-          label: const Text('Add event'),
+        SnowCapped(
+          borderRadius: 22,
+          snowHeight: 7,
+          horizontalInset: 3,
+          child: OutlinedButton.icon(
+            onPressed: onAddEvent,
+            icon: const Icon(Icons.add),
+            label: const Text('Add event'),
+          ),
         ),
       ],
     );
@@ -460,7 +537,9 @@ class _DailyView extends ConsumerWidget {
                 child: Text(
                   dateFormatter.format(selectedDate),
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               IconButton(
@@ -503,8 +582,12 @@ class _DailyView extends ConsumerWidget {
 
                   return GestureDetector(
                     onTap: () => context.go('/calendar/event/${event.id}'),
-                    child: Card(
+                    child: SnowCappedCard(
                       margin: const EdgeInsets.symmetric(vertical: 4),
+                      padding: EdgeInsets.zero,
+                      borderRadius: 18,
+                      snowHeight: 10,
+                      horizontalInset: 2,
                       clipBehavior: Clip.antiAlias,
                       child: IntrinsicHeight(
                         child: Row(
@@ -562,7 +645,21 @@ class _ChatBox extends StatefulWidget {
 class _ChatBoxState extends State<_ChatBox> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
-  final List<_ChatMessage> _messages = [];
+
+  final List<_ChatMessage> _messages = [
+    const _ChatMessage(
+      text:
+          'Hi! I can help you plan your schedule. Try asking: "How should I organize today?" or "What should I add to my calendar?"',
+      isUser: false,
+    ),
+  ];
+
+  static const _promptSuggestions = [
+    'Help me plan today',
+    'Suggest a study schedule',
+    'What should I add next?',
+    'How do I avoid overbooking?',
+  ];
 
   @override
   void dispose() {
@@ -571,8 +668,8 @@ class _ChatBoxState extends State<_ChatBox> {
     super.dispose();
   }
 
-  void _sendMessage() {
-    final text = _controller.text.trim();
+  void _sendMessage([String? preset]) {
+    final text = (preset ?? _controller.text).trim();
     if (text.isEmpty) return;
 
     setState(() {
@@ -580,7 +677,40 @@ class _ChatBoxState extends State<_ChatBox> {
       _controller.clear();
     });
 
+    _addAssistantReply(text);
     _scrollToBottom();
+  }
+
+  void _addAssistantReply(String userText) {
+    final reply = _replyForPrompt(userText);
+
+    Future.delayed(const Duration(milliseconds: 250), () {
+      if (!mounted) return;
+
+      setState(() {
+        _messages.add(_ChatMessage(text: reply, isUser: false));
+      });
+
+      _scrollToBottom();
+    });
+  }
+
+  String _replyForPrompt(String text) {
+    final lower = text.toLowerCase();
+
+    if (lower.contains('study') || lower.contains('schedule')) {
+      return 'A good schedule is to block your most important task first, then add shorter tasks around it. You can double-click a date on the calendar to create a new event.';
+    }
+
+    if (lower.contains('today') || lower.contains('plan')) {
+      return 'Start by adding your fixed events first. Then add one high-priority task, one medium task, and leave some buffer time.';
+    }
+
+    if (lower.contains('overbook') || lower.contains('busy')) {
+      return 'Try leaving 15–30 minutes between events. If a day already has several events, move lower-priority tasks to another day.';
+    }
+
+    return 'You can use the calendar to plan events, double-click a date to add one quickly, or use the plus button to create an event for the selected day.';
   }
 
   void _scrollToBottom() {
@@ -598,9 +728,10 @@ class _ChatBoxState extends State<_ChatBox> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.6,
+      height: MediaQuery.of(context).size.height * 0.68,
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -611,14 +742,16 @@ class _ChatBoxState extends State<_ChatBox> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: theme.colorScheme.primary,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
             ),
             child: Row(
               children: [
                 const Icon(Icons.support_agent, color: Colors.white),
                 const SizedBox(width: 8),
                 Text(
-                  'Support Chat',
+                  'Calendar Assistant',
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -635,40 +768,35 @@ class _ChatBoxState extends State<_ChatBox> {
             ),
           ),
           Expanded(
-            child: _messages.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.chat_bubble_outline,
-                          size: 48,
-                          color: theme.colorScheme.outline,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'How can we help you?',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.outline,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) =>
-                        _MessageBubble(message: _messages[index]),
+            child: ListView(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(16),
+              children: [
+                ..._messages.map((message) {
+                  return _MessageBubble(message: message);
+                }),
+                if (_messages.length == 1) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _promptSuggestions.map((prompt) {
+                      return ActionChip(
+                        label: Text(prompt),
+                        onPressed: () => _sendMessage(prompt),
+                      );
+                    }).toList(),
                   ),
+                ],
+              ],
+            ),
           ),
           Padding(
             padding: EdgeInsets.only(
               left: 12,
               right: 12,
               top: 8,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 12,
+              bottom: bottomInset + 12,
             ),
             child: Row(
               children: [
@@ -678,7 +806,7 @@ class _ChatBoxState extends State<_ChatBox> {
                     textInputAction: TextInputAction.send,
                     onSubmitted: (_) => _sendMessage(),
                     decoration: InputDecoration(
-                      hintText: 'Type a message...',
+                      hintText: 'Ask about your schedule...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
@@ -691,7 +819,7 @@ class _ChatBoxState extends State<_ChatBox> {
                 ),
                 const SizedBox(width: 8),
                 IconButton.filled(
-                  onPressed: _sendMessage,
+                  onPressed: () => _sendMessage(),
                   icon: const Icon(Icons.send),
                 ),
               ],
@@ -705,6 +833,7 @@ class _ChatBoxState extends State<_ChatBox> {
 
 class _ChatMessage {
   const _ChatMessage({required this.text, required this.isUser});
+
   final String text;
   final bool isUser;
 }

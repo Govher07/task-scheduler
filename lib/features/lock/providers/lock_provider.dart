@@ -27,5 +27,6 @@ class LockNotifier extends Notifier<LockState> {
   }
 }
 
-final lockProvider =
-    NotifierProvider<LockNotifier, LockState>(LockNotifier.new);
+final lockProvider = NotifierProvider<LockNotifier, LockState>(
+  LockNotifier.new,
+);

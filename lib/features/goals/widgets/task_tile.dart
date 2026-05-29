@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/models/enums.dart';
 import '../../../core/models/task.dart';
 import '../../../core/services/reward_service.dart';
 import '../../../core/widgets/effort_indicator.dart';
 import '../../../core/widgets/priority_badge.dart';
+import '../../../core/widgets/seasonal_background.dart';
 
 class TaskTile extends StatelessWidget {
   final Task task;
@@ -47,41 +49,81 @@ class TaskTile extends StatelessWidget {
         title: Text(
           task.name,
           style: TextStyle(
-            decoration: task.status == TaskStatus.done ? TextDecoration.lineThrough : null,
+            decoration: task.status == TaskStatus.done
+                ? TextDecoration.lineThrough
+                : null,
           ),
         ),
-        subtitle: Row(
-          children: [
-            PriorityBadge(priority: task.priority),
-            const SizedBox(width: 8),
-            EffortIndicator(level: task.effortLevel),
-            if (task.deadline != null) ...[
-              if (task.starttime != null) ...[
-                const SizedBox(width: 8),
-                Text(
-                  '${DateFormat.MMMd().format(task.starttime!)}  -',
-                  style: Theme.of(context).textTheme.labelSmall,
-                ),
-              ] else ...[
-                const SizedBox(width: 8),
-                Text(
-                  'due',
-                  style: Theme.of(context).textTheme.labelSmall,
-                ),
-              ],
-              const SizedBox(width: 8),
-              Text(
-                DateFormat.MMMd().format(task.deadline!),
-                style: Theme.of(context).textTheme.labelSmall,
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              SnowCapped(
+                borderRadius: 999,
+                snowHeight: 8,
+                horizontalInset: 2,
+                child: PriorityBadge(priority: task.priority),
               ),
+              SnowCapped(
+                borderRadius: 999,
+                snowHeight: 8,
+                horizontalInset: 2,
+                child: EffortIndicator(level: task.effortLevel),
+              ),
+              if (task.deadline != null)
+                SnowCapped(
+                  borderRadius: 999,
+                  snowHeight: 8,
+                  horizontalInset: 2,
+                  child: _DeadlineBadge(
+                    startTime: task.starttime,
+                    deadline: task.deadline!,
+                  ),
+                ),
             ],
-          ],
+          ),
         ),
         trailing: _CoinBadge(
           coins: RewardService.calcTotalReward(task),
           collected: task.gotRewards,
         ),
         onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _DeadlineBadge extends StatelessWidget {
+  const _DeadlineBadge({required this.startTime, required this.deadline});
+
+  final DateTime? startTime;
+  final DateTime deadline;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final label = startTime == null
+        ? 'Due ${DateFormat.MMMd().format(deadline)}'
+        : '${DateFormat.MMMd().format(startTime!)} - ${DateFormat.MMMd().format(deadline)}';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: colorScheme.secondaryContainer.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Text(
+        label,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: colorScheme.onSecondaryContainer,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

@@ -56,8 +56,7 @@ class SupabaseTaskRepository implements TaskRepository {
 
   @override
   Future<Task?> getTaskById(String id) async {
-    final row =
-        await _client.from('tasks').select().eq('id', id).maybeSingle();
+    final row = await _client.from('tasks').select().eq('id', id).maybeSingle();
     return row == null ? null : _fromRow(row);
   }
 
@@ -69,24 +68,22 @@ class SupabaseTaskRepository implements TaskRepository {
 
   @override
   Future<List<Task>> getTasksByGoalId(String goalId) async {
-    final rows =
-        await _client.from('tasks').select().eq('goal_id', goalId);
+    final rows = await _client.from('tasks').select().eq('goal_id', goalId);
     return rows.map(_fromRow).toList();
   }
 
   @override
   Future<List<Task>> getUngroupedTasks() async {
-    final rows =
-        await _client.from('tasks').select().isFilter('goal_id', null);
+    final rows = await _client.from('tasks').select().isFilter('goal_id', null);
     return rows.map(_fromRow).toList();
   }
 
   @override
   Future<List<Task>> getIncompleteTasks() async {
-    final rows = await _client
-        .from('tasks')
-        .select()
-        .inFilter('status', ['todo', 'inProgress']);
+    final rows = await _client.from('tasks').select().inFilter('status', [
+      'todo',
+      'inProgress',
+    ]);
     return rows.map(_fromRow).toList();
   }
 
@@ -111,14 +108,19 @@ class SupabaseTaskRepository implements TaskRepository {
 
   @override
   Stream<List<Task>> watchUngroupedTasks() {
-    return _client.from('tasks').stream(primaryKey: ['id']).map(
-        (rows) => rows.map(_fromRow).where((t) => t.goalId == null).toList());
+    return _client
+        .from('tasks')
+        .stream(primaryKey: ['id'])
+        .map(
+          (rows) => rows.map(_fromRow).where((t) => t.goalId == null).toList(),
+        );
   }
 
   @override
   Stream<List<Task>> watchAllTasks() {
     return _client
         .from('tasks')
-        .stream(primaryKey: ['id']).map((rows) => rows.map(_fromRow).toList());
+        .stream(primaryKey: ['id'])
+        .map((rows) => rows.map(_fromRow).toList());
   }
 }

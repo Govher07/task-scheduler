@@ -102,11 +102,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (_checkingStatus) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -144,9 +140,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         });
                       },
                       itemBuilder: (context, index) {
-                        return _WelcomePage(
-                          page: _pages[index],
-                        );
+                        return _WelcomePage(page: _pages[index]);
                       },
                     ),
                   ),
@@ -166,10 +160,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       onPressed: _goToNextPage,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
-                        side: const BorderSide(
-                          color: Colors.black,
-                          width: 1.6,
-                        ),
+                        side: const BorderSide(color: Colors.black, width: 1.6),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -207,9 +198,7 @@ class _WelcomePageData {
 }
 
 class _WelcomePage extends StatelessWidget {
-  const _WelcomePage({
-    required this.page,
-  });
+  const _WelcomePage({required this.page});
 
   final _WelcomePageData page;
 
@@ -255,9 +244,7 @@ class _WelcomePage extends StatelessWidget {
 }
 
 class _WelcomeIllustration extends StatelessWidget {
-  const _WelcomeIllustration({
-    required this.icon,
-  });
+  const _WelcomeIllustration({required this.icon});
 
   final IconData icon;
 
@@ -282,11 +269,7 @@ class _WelcomeIllustration extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: Colors.black, width: 2),
             ),
-            child: Icon(
-              icon,
-              size: 68,
-              color: Colors.black,
-            ),
+            child: Icon(icon, size: 68, color: Colors.black),
           ),
 
           Positioned(
@@ -354,10 +337,7 @@ class _PageDots extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(999),
                 color: isActive ? Colors.black : Colors.white,
-                border: Border.all(
-                  color: Colors.black,
-                  width: 1.5,
-                ),
+                border: Border.all(color: Colors.black, width: 1.5),
               ),
             ),
           ),

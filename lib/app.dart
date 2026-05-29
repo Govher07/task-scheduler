@@ -4,10 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'features/auth/screens/login_screen.dart';
-import 'features/auth/screens/register_screen.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
+import 'core/widgets/seasonal_background.dart';
+import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/register_screen.dart';
 import 'features/calendar/screens/calendar_screen.dart';
 import 'features/calendar/screens/event_form_screen.dart';
 import 'features/gaming/screens/gaming_screen.dart';
@@ -62,7 +63,6 @@ final router = GoRouter(
         forceShow: state.uri.queryParameters['force'] == 'true',
       ),
     ),
-
     GoRoute(
       path: '/login',
       parentNavigatorKey: _rootNavigatorKey,
@@ -176,45 +176,63 @@ class TaskSchedulerApp extends ConsumerWidget {
 }
 
 class AppShell extends StatelessWidget {
-  final Widget child;
-
   const AppShell({super.key, required this.child});
+
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).uri.path;
+    final isGamingPage = location.startsWith('/gaming');
+
+    Widget bottomNav = NavigationBar(
+      selectedIndex: _calculateSelectedIndex(context),
+      onDestinationSelected: (index) => _onItemTapped(index, context),
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.gamepad_outlined),
+          selectedIcon: Icon(Icons.gamepad),
+          label: 'Gaming',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.calendar_month_outlined),
+          selectedIcon: Icon(Icons.calendar_month),
+          label: 'Calendar',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.flag_outlined),
+          selectedIcon: Icon(Icons.flag),
+          label: 'My Goals',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.lock_outline),
+          selectedIcon: Icon(Icons.lock),
+          label: 'Lock',
+        ),
+      ],
+    );
+
+    if (!isGamingPage) {
+      bottomNav = SnowCapped(borderRadius: 0, snowHeight: 7, child: bottomNav);
+    }
+
     return Scaffold(
-      body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _calculateSelectedIndex(context),
-        onDestinationSelected: (index) => _onItemTapped(index, context),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.gamepad_outlined),
-            selectedIcon: Icon(Icons.gamepad),
-            label: 'Gaming',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month),
-            label: 'My Calendar',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.flag_outlined),
-            selectedIcon: Icon(Icons.flag),
-            label: 'My Goals',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.lock_outline),
-            selectedIcon: Icon(Icons.lock),
-            label: 'Lock',
-          ),
+      extendBody: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (!isGamingPage) const SeasonalBackground(),
+          child,
+          if (!isGamingPage) const SeasonalForegroundSnow(),
         ],
       ),
+      bottomNavigationBar: bottomNav,
     );
   }
 
@@ -234,14 +252,19 @@ class AppShell extends StatelessWidget {
     switch (index) {
       case 0:
         context.go('/home');
+        break;
       case 1:
         context.go('/gaming');
+        break;
       case 2:
         context.go('/calendar');
+        break;
       case 3:
         context.go('/goals');
+        break;
       case 4:
         context.go('/lock/setup');
+        break;
     }
   }
 }

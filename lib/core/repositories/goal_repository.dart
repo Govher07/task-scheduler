@@ -50,8 +50,9 @@ class DriftGoalRepository implements GoalRepository {
 
   @override
   Future<model.Goal?> getGoalById(String id) async {
-    final row = await (_db.select(_db.goals)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.goals,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row == null ? null : _toModel(row);
   }
 
@@ -63,8 +64,9 @@ class DriftGoalRepository implements GoalRepository {
 
   @override
   Future<void> updateGoal(model.Goal goal) async {
-    await (_db.update(_db.goals)..where((t) => t.id.equals(goal.id)))
-        .write(_toCompanion(goal));
+    await (_db.update(
+      _db.goals,
+    )..where((t) => t.id.equals(goal.id))).write(_toCompanion(goal));
   }
 
   @override
@@ -74,8 +76,9 @@ class DriftGoalRepository implements GoalRepository {
 
   @override
   Stream<List<model.Goal>> watchAllGoals() {
-    return _db.select(_db.goals).watch().map(
-          (rows) => rows.map(_toModel).toList(),
-        );
+    return _db
+        .select(_db.goals)
+        .watch()
+        .map((rows) => rows.map(_toModel).toList());
   }
 }

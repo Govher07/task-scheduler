@@ -42,8 +42,11 @@ class SupabaseEventRepository implements EventRepository {
 
   @override
   Future<Event?> getEventById(String id) async {
-    final row =
-        await _client.from('events').select().eq('id', id).maybeSingle();
+    final row = await _client
+        .from('events')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
     return row == null ? null : _fromRow(row);
   }
 
@@ -54,8 +57,7 @@ class SupabaseEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<Event>> getEventsByDateRange(
-      DateTime start, DateTime end) async {
+  Future<List<Event>> getEventsByDateRange(DateTime start, DateTime end) async {
     final rows = await _client
         .from('events')
         .select()
@@ -90,10 +92,17 @@ class SupabaseEventRepository implements EventRepository {
 
   @override
   Stream<List<Event>> watchEventsByDateRange(DateTime start, DateTime end) {
-    return _client.from('events').stream(primaryKey: ['id']).map((rows) => rows
-        .map(_fromRow)
-        .where((e) =>
-            !e.startTime.isBefore(start) && e.startTime.isBefore(end))
-        .toList());
+    return _client
+        .from('events')
+        .stream(primaryKey: ['id'])
+        .map(
+          (rows) => rows
+              .map(_fromRow)
+              .where(
+                (e) =>
+                    !e.startTime.isBefore(start) && e.startTime.isBefore(end),
+              )
+              .toList(),
+        );
   }
 }

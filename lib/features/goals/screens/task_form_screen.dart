@@ -40,7 +40,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   }
 
   Future<void> _loadTask() async {
-    final task = await ref.read(taskRepositoryProvider).getTaskById(widget.taskId!);
+    final task = await ref
+        .read(taskRepositoryProvider)
+        .getTaskById(widget.taskId!);
     if (task != null && mounted) {
       setState(() {
         _existingTask = task;
@@ -85,38 +87,74 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Task Name', border: OutlineInputBorder()),
-              validator: (value) => (value == null || value.trim().isEmpty) ? 'Name is required' : null,
+              decoration: const InputDecoration(
+                labelText: 'Task Name',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) => (value == null || value.trim().isEmpty)
+                  ? 'Name is required'
+                  : null,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<Priority>(
               initialValue: _priority,
-              decoration: const InputDecoration(labelText: 'Priority', border: OutlineInputBorder()),
-              items: Priority.values.map((p) => DropdownMenuItem(value: p, child: Text(p.name.toUpperCase()))).toList(),
+              decoration: const InputDecoration(
+                labelText: 'Priority',
+                border: OutlineInputBorder(),
+              ),
+              items: Priority.values
+                  .map(
+                    (p) => DropdownMenuItem(
+                      value: p,
+                      child: Text(p.name.toUpperCase()),
+                    ),
+                  )
+                  .toList(),
               onChanged: (value) => setState(() => _priority = value!),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<EffortLevel>(
               initialValue: _effortLevel,
-              decoration: const InputDecoration(labelText: 'Effort Level', border: OutlineInputBorder()),
-              items: EffortLevel.values.map((e) => DropdownMenuItem(value: e, child: Text(e.name.toUpperCase()))).toList(),
+              decoration: const InputDecoration(
+                labelText: 'Effort Level',
+                border: OutlineInputBorder(),
+              ),
+              items: EffortLevel.values
+                  .map(
+                    (e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(e.name.toUpperCase()),
+                    ),
+                  )
+                  .toList(),
               onChanged: (value) => setState(() => _effortLevel = value!),
             ),
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(_starttime == null ? 'No StartTime' : 'StartTime: ${DateFormat.yMMMd().format(_starttime!)}'),
+              title: Text(
+                _starttime == null
+                    ? 'No StartTime'
+                    : 'StartTime: ${DateFormat.yMMMd().format(_starttime!)}',
+              ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_starttime != null)
-                    IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _starttime = null)),
+                    IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () => setState(() => _starttime = null),
+                    ),
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
                     onPressed: () async {
-                      final lastDate = _deadline ?? DateTime.now().add(const Duration(days: 365 * 5));
+                      final lastDate =
+                          _deadline ??
+                          DateTime.now().add(const Duration(days: 365 * 5));
                       final raw = _starttime ?? DateTime.now();
-                      final initialDate = raw.isAfter(lastDate) ? lastDate : raw;
+                      final initialDate = raw.isAfter(lastDate)
+                          ? lastDate
+                          : raw;
                       final date = await showDatePicker(
                         context: context,
                         initialDate: initialDate,
@@ -132,23 +170,34 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(_deadline == null ? 'No Deadline' : 'Deadline: ${DateFormat.yMMMd().format(_deadline!)}'),
+              title: Text(
+                _deadline == null
+                    ? 'No Deadline'
+                    : 'Deadline: ${DateFormat.yMMMd().format(_deadline!)}',
+              ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_deadline != null)
-                    IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _deadline = null)),
+                    IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () => setState(() => _deadline = null),
+                    ),
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
                     onPressed: () async {
                       final firstDate = _starttime ?? DateTime(2020);
                       final raw = _deadline ?? DateTime.now();
-                      final initialDate = raw.isBefore(firstDate) ? firstDate : raw;
+                      final initialDate = raw.isBefore(firstDate)
+                          ? firstDate
+                          : raw;
                       final date = await showDatePicker(
                         context: context,
                         initialDate: initialDate,
                         firstDate: firstDate,
-                        lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                        lastDate: DateTime.now().add(
+                          const Duration(days: 365 * 5),
+                        ),
                       );
                       if (date != null) setState(() => _deadline = date);
                     },
@@ -163,10 +212,15 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                 final goals = snapshot.data ?? [];
                 return DropdownButtonFormField<String?>(
                   initialValue: _goalId,
-                  decoration: const InputDecoration(labelText: 'Goal (optional)', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    labelText: 'Goal (optional)',
+                    border: OutlineInputBorder(),
+                  ),
                   items: [
                     const DropdownMenuItem(value: null, child: Text('No goal')),
-                    ...goals.map((g) => DropdownMenuItem(value: g.id, child: Text(g.name))),
+                    ...goals.map(
+                      (g) => DropdownMenuItem(value: g.id, child: Text(g.name)),
+                    ),
                   ],
                   onChanged: (value) => setState(() => _goalId = value),
                 );
@@ -202,13 +256,19 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       updatedAt: now,
     );
     final repo = ref.read(taskRepositoryProvider);
-    if (_isEditing) { await repo.updateTask(task); } else { await repo.createTask(task); }
+    if (_isEditing) {
+      await repo.updateTask(task);
+    } else {
+      await repo.createTask(task);
+    }
     if (mounted) {
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             children: [
               Icon(

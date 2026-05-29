@@ -8,13 +8,9 @@ final calendarViewModeProvider = StateProvider<CalendarViewMode>(
   (ref) => CalendarViewMode.monthly,
 );
 
-final selectedDateProvider = StateProvider<DateTime>(
-  (ref) => DateTime.now(),
-);
+final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
-final focusedMonthProvider = StateProvider<DateTime>(
-  (ref) => DateTime.now(),
-);
+final focusedMonthProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
 final monthEventsProvider = StreamProvider<List<Event>>((ref) {
   final focusedMonth = ref.watch(focusedMonthProvider);

@@ -11,9 +11,5 @@ void main() async {
     anonKey: 'sb_publishable_cGLlMC9xIn3G6ES3qGVgiw_wc4BscVF',
   );
 
-  runApp(
-    const ProviderScope(
-      child: TaskSchedulerApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: TaskSchedulerApp()));
 }

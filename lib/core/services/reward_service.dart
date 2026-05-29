@@ -65,7 +65,9 @@ class RewardService {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return;
 
-    final coins = calcTotalReward(task); // dynamic total at moment of completion
+    final coins = calcTotalReward(
+      task,
+    ); // dynamic total at moment of completion
 
     await Future.wait([
       _client.from('coin_transactions').insert({
@@ -74,10 +76,13 @@ class RewardService {
         'reason': 'task_completed',
       }),
       _incrementBalance(userId, coins),
-      _client.from('tasks').update({
-        'got_rewards': true,
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('id', task.id),
+      _client
+          .from('tasks')
+          .update({
+            'got_rewards': true,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', task.id),
     ]);
   }
 
@@ -96,11 +101,14 @@ class RewardService {
         'reason': 'goal_completed',
       }),
       _incrementBalance(userId, coins),
-      _client.from('goals').update({
-        'got_rewards': true,
-        'reward_coins': coins,
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('id', goal.id),
+      _client
+          .from('goals')
+          .update({
+            'got_rewards': true,
+            'reward_coins': coins,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', goal.id),
     ]);
   }
 
@@ -151,12 +159,16 @@ class RewardService {
         .eq('user_id', userId);
 
     final result = <String, Map<String, dynamic>?>{
-      'animals': null, 'plants': null, 'decor': null, 'characters': null,
+      'animals': null,
+      'plants': null,
+      'decor': null,
+      'characters': null,
     };
     for (final row in rows) {
       final slotType = row['slot_type'] as String;
       final itemData = row['shop_items'];
-      if (itemData != null) result[slotType] = Map<String, dynamic>.from(itemData as Map);
+      if (itemData != null)
+        result[slotType] = Map<String, dynamic>.from(itemData as Map);
     }
     return result;
   }
@@ -166,8 +178,11 @@ class RewardService {
     if (userId == null) return;
 
     if (itemId == null) {
-      await _client.from('room_slots').delete()
-          .eq('user_id', userId).eq('slot_type', slotType);
+      await _client
+          .from('room_slots')
+          .delete()
+          .eq('user_id', userId)
+          .eq('slot_type', slotType);
     } else {
       await _client.from('room_slots').upsert({
         'user_id': userId,
@@ -240,9 +255,12 @@ class RewardService {
         .single();
 
     final current = row['balance'] as int? ?? 0;
-    await _client.from('profiles').update({
-      'balance': current + amount,
-      'updated_at': DateTime.now().toIso8601String(),
-    }).eq('id', userId);
+    await _client
+        .from('profiles')
+        .update({
+          'balance': current + amount,
+          'updated_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', userId);
   }
 }

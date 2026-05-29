@@ -30,11 +30,17 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
   @override
   void initState() {
     super.initState();
-    if (_isEditing) { _loadGoal(); } else { _isLoading = false; }
+    if (_isEditing) {
+      _loadGoal();
+    } else {
+      _isLoading = false;
+    }
   }
 
   Future<void> _loadGoal() async {
-    final goal = await ref.read(goalRepositoryProvider).getGoalById(widget.goalId!);
+    final goal = await ref
+        .read(goalRepositoryProvider)
+        .getGoalById(widget.goalId!);
     if (goal != null && mounted) {
       setState(() {
         _existingGoal = goal;
@@ -68,7 +74,10 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
         title: Text(_isEditing ? 'Edit Goal' : 'New Goal'),
         actions: [
           if (_isEditing)
-            IconButton(icon: const Icon(Icons.delete), onPressed: _confirmDelete),
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: _confirmDelete,
+            ),
         ],
       ),
       body: Form(
@@ -78,24 +87,40 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Goal Name', border: OutlineInputBorder()),
-              validator: (value) => (value == null || value.trim().isEmpty) ? 'Name is required' : null,
+              decoration: const InputDecoration(
+                labelText: 'Goal Name',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) => (value == null || value.trim().isEmpty)
+                  ? 'Name is required'
+                  : null,
             ),
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(_starttime == null ? 'No StartTime' : 'StartTime: ${DateFormat.yMMMd().format(_starttime!)}'),
+              title: Text(
+                _starttime == null
+                    ? 'No StartTime'
+                    : 'StartTime: ${DateFormat.yMMMd().format(_starttime!)}',
+              ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_starttime != null)
-                    IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _starttime = null)),
+                    IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () => setState(() => _starttime = null),
+                    ),
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
                     onPressed: () async {
-                      final lastDate = _deadline ?? DateTime.now().add(const Duration(days: 365 * 5));
+                      final lastDate =
+                          _deadline ??
+                          DateTime.now().add(const Duration(days: 365 * 5));
                       final raw = _starttime ?? DateTime.now();
-                      final initialDate = raw.isAfter(lastDate) ? lastDate : raw;
+                      final initialDate = raw.isAfter(lastDate)
+                          ? lastDate
+                          : raw;
                       final date = await showDatePicker(
                         context: context,
                         initialDate: initialDate,
@@ -111,26 +136,37 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(_deadline == null ? 'No Deadline' : 'Deadline: ${DateFormat.yMMMd().format(_deadline!)}'),
+              title: Text(
+                _deadline == null
+                    ? 'No Deadline'
+                    : 'Deadline: ${DateFormat.yMMMd().format(_deadline!)}',
+              ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_deadline != null)
-                    IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _deadline = null)),
+                    IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () => setState(() => _deadline = null),
+                    ),
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
                     onPressed: () async {
                       final firstDate = _starttime ?? DateTime(2020);
                       final raw = _deadline ?? DateTime.now();
-                      final initialDate = raw.isBefore(firstDate) ? firstDate : raw;
+                      final initialDate = raw.isBefore(firstDate)
+                          ? firstDate
+                          : raw;
                       final date = await showDatePicker(
                         context: context,
                         initialDate: initialDate,
                         firstDate: firstDate,
-                        lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                        lastDate: DateTime.now().add(
+                          const Duration(days: 365 * 5),
+                        ),
                       );
                       if (date != null) setState(() => _deadline = date);
-                    }
+                    },
                   ),
                 ],
               ),
@@ -138,21 +174,36 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _descriptionController,
-              decoration: const InputDecoration(labelText: 'Description (optional)', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: 'Description (optional)',
+                border: OutlineInputBorder(),
+              ),
               maxLines: 3,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<GoalType>(
               initialValue: _type,
-              decoration: const InputDecoration(labelText: 'Goal Type', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: 'Goal Type',
+                border: OutlineInputBorder(),
+              ),
               items: const [
-                DropdownMenuItem(value: GoalType.completable, child: Text('Completable')),
-                DropdownMenuItem(value: GoalType.ongoing, child: Text('Ongoing')),
+                DropdownMenuItem(
+                  value: GoalType.completable,
+                  child: Text('Completable'),
+                ),
+                DropdownMenuItem(
+                  value: GoalType.ongoing,
+                  child: Text('Ongoing'),
+                ),
               ],
               onChanged: (value) => setState(() => _type = value!),
             ),
             const SizedBox(height: 24),
-            FilledButton(onPressed: _save, child: Text(_isEditing ? 'Update' : 'Create')),
+            FilledButton(
+              onPressed: _save,
+              child: Text(_isEditing ? 'Update' : 'Create'),
+            ),
           ],
         ),
       ),
@@ -168,23 +219,31 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
       type: _type,
       starttime: _starttime,
       deadline: _deadline,
-      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim(),
       gotRewards: _existingGoal?.gotRewards ?? false,
       rewardCoins: _existingGoal?.rewardCoins ?? 50,
       createdAt: _existingGoal?.createdAt ?? now,
       updatedAt: now,
     );
     final repo = ref.read(goalRepositoryProvider);
-    if (_isEditing) { await repo.updateGoal(goal); } else { await repo.createGoal(goal); }
+    if (_isEditing) {
+      await repo.updateGoal(goal);
+    } else {
+      await repo.createGoal(goal);
+    }
     if (mounted) {
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
           title: const Text('Success'),
-          content: Text(_isEditing
-              ? 'Goal updated successfully.'
-              : 'Goal created successfully.'),
+          content: Text(
+            _isEditing
+                ? 'Goal updated successfully.'
+                : 'Goal created successfully.',
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -204,9 +263,14 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Goal'),
-        content: const Text('This will delete the goal but keep its tasks as ungrouped. Continue?'),
+        content: const Text(
+          'This will delete the goal but keep its tasks as ungrouped. Continue?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
