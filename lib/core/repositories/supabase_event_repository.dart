@@ -16,6 +16,7 @@ class SupabaseEventRepository implements EventRepository {
       endTime: DateTime.parse(row['end_time'] as String),
       isRepeating: row['is_repeating'] as bool,
       recurrenceRule: row['recurrence_rule'] as String?,
+      isDone: row['is_done'] as bool? ?? false,
       createdAt: DateTime.parse(row['created_at'] as String),
       updatedAt: DateTime.parse(row['updated_at'] as String),
     );
@@ -30,6 +31,7 @@ class SupabaseEventRepository implements EventRepository {
       'end_time': event.endTime.toIso8601String(),
       'is_repeating': event.isRepeating,
       'recurrence_rule': event.recurrenceRule,
+      // 'is_done': event.isDone, // TODO: Uncomment after running ALTER TABLE events ADD COLUMN is_done BOOLEAN DEFAULT false; in Supabase
       'created_at': event.createdAt.toIso8601String(),
       'updated_at': event.updatedAt.toIso8601String(),
     };

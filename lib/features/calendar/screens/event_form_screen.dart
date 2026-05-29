@@ -203,10 +203,20 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
 
     final repo = ref.read(eventRepositoryProvider);
 
-    if (_isEditing) {
-      await repo.updateEvent(event);
-    } else {
-      await repo.createEvent(event);
+    try {
+      if (_isEditing) {
+        await repo.updateEvent(event);
+      } else {
+        await repo.createEvent(event);
+      }
+    } catch (e, stack) {
+      debugPrint('Error saving event: $e\n$stack');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+      return;
     }
 
     if (mounted) {
@@ -265,7 +275,12 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                   .deleteEvent(widget.eventId!);
 
               if (mounted) {
-                context.pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Event successfully deleted'),
+                  ),
+                );
+                context.go('/calendar');
               }
             },
             child: const Text('Delete'),

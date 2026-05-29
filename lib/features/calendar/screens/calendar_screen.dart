@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/models/event.dart';
+import '../../../core/providers.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../providers/calendar_provider.dart';
 
@@ -78,6 +79,19 @@ class CalendarScreen extends ConsumerWidget {
 class _MonthlyView extends ConsumerWidget {
   const _MonthlyView();
 
+  void _showSummary(BuildContext context, WidgetRef ref, DateTime focusedMonth, List<Event> events) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => _MonthSummarySheet(
+        month: focusedMonth,
+        events: events,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final focusedMonth = ref.watch(focusedMonthProvider);
@@ -119,6 +133,7 @@ class _MonthlyView extends ConsumerWidget {
                   today.month,
                 );
               },
+              onSummarize: () => _showSummary(context, ref, focusedMonth, events),
             ),
             const SizedBox(height: 16),
             _MonthGrid(
@@ -150,6 +165,9 @@ class _MonthlyView extends ConsumerWidget {
               events: selectedEvents,
               onEventTap: (event) => context.go('/calendar/event/${event.id}'),
               onAddEvent: () => context.go(_newEventPathForDate(selectedDate)),
+              onEventToggle: (event, checked) {
+                ref.read(eventRepositoryProvider).updateEvent(event.copyWith(isDone: checked));
+              },
             ),
           ],
         );
@@ -164,12 +182,14 @@ class _MonthHeader extends StatelessWidget {
     required this.onPreviousMonth,
     required this.onNextMonth,
     required this.onToday,
+    required this.onSummarize,
   });
 
   final DateTime focusedMonth;
   final VoidCallback onPreviousMonth;
   final VoidCallback onNextMonth;
   final VoidCallback onToday;
+  final VoidCallback onSummarize;
 
   @override
   Widget build(BuildContext context) {
@@ -193,6 +213,11 @@ class _MonthHeader extends StatelessWidget {
           tooltip: 'Next month',
           icon: const Icon(Icons.chevron_right),
           onPressed: onNextMonth,
+        ),
+        IconButton(
+          tooltip: 'Summarize month',
+          icon: const Icon(Icons.summarize_outlined),
+          onPressed: onSummarize,
         ),
         IconButton(
           tooltip: 'Today',
@@ -375,11 +400,13 @@ class _SelectedDayEvents extends StatelessWidget {
     required this.events,
     required this.onEventTap,
     required this.onAddEvent,
+    required this.onEventToggle,
   });
 
   final List<Event> events;
   final ValueChanged<Event> onEventTap;
   final VoidCallback onAddEvent;
+  final void Function(Event, bool) onEventToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -414,8 +441,20 @@ class _SelectedDayEvents extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: ListTile(
               onTap: () => onEventTap(event),
-              leading: const Icon(Icons.event_outlined),
-              title: Text(event.name),
+              leading: Checkbox(
+                value: event.isDone == true,
+                onChanged: (checked) {
+                  if (checked != null) {
+                    onEventToggle(event, checked);
+                  }
+                },
+              ),
+              title: Text(
+                event.name,
+                style: TextStyle(
+                  decoration: event.isDone == true ? TextDecoration.lineThrough : null,
+                ),
+              ),
               subtitle: Text('$startTime - $endTime'),
               trailing: const Icon(Icons.chevron_right),
             ),
@@ -517,21 +556,35 @@ class _DailyView extends ConsumerWidget {
                             Expanded(
                               child: Padding(
                                 padding: const EdgeInsets.all(12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                child: Row(
                                   children: [
-                                    Text(
-                                      event.name,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
+                                    Checkbox(
+                                      value: event.isDone == true,
+                                      onChanged: (checked) {
+                                        if (checked != null) {
+                                          ref.read(eventRepositoryProvider).updateEvent(event.copyWith(isDone: checked));
+                                        }
+                                      },
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '$startTime - $endTime',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodySmall,
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            event.name,
+                                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                              decoration: event.isDone == true ? TextDecoration.lineThrough : null,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '$startTime - $endTime',
+                                            style: Theme.of(context).textTheme.bodySmall,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -761,4 +814,109 @@ String _newEventPathForDate(DateTime date) {
   final day = date.day.toString().padLeft(2, '0');
 
   return '/calendar/event/new?date=$year-$month-$day';
+}
+
+class _MonthSummarySheet extends ConsumerStatefulWidget {
+  final DateTime month;
+  final List<Event> events;
+
+  const _MonthSummarySheet({
+    required this.month,
+    required this.events,
+  });
+
+  @override
+  ConsumerState<_MonthSummarySheet> createState() => _MonthSummarySheetState();
+}
+
+class _MonthSummarySheetState extends ConsumerState<_MonthSummarySheet> {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final monthLabel = DateFormat('MMMM yyyy').format(widget.month);
+    
+    final scheduledEvents = widget.events;
+    final doneEvents = widget.events.where((e) => e.isDone == true).toList();
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Summary for $monthLabel',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 24),
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildStat(context, 'Scheduled', scheduledEvents.length.toString(), theme.colorScheme.primary),
+                    _buildStat(context, 'Done', doneEvents.length.toString(), Colors.green),
+                  ],
+                ),
+                if (scheduledEvents.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.3,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: scheduledEvents.map((event) {
+                          final isDone = event.isDone == true;
+                          return Chip(
+                            label: Text(
+                              event.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            backgroundColor: isDone ? Colors.green.withValues(alpha: 0.1) : theme.colorScheme.surfaceContainerHighest,
+                            labelStyle: TextStyle(
+                              color: isDone ? Colors.green : theme.colorScheme.onSurfaceVariant,
+                              fontSize: 12,
+                              decoration: isDone ? TextDecoration.lineThrough : null,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStat(BuildContext context, String label, String value, Color color) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Text(
+          value,
+          style: theme.textTheme.headlineLarge?.copyWith(
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.outline,
+          ),
+        ),
+      ],
+    );
+  }
 }

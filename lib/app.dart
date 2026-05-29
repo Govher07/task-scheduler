@@ -165,6 +165,7 @@ class TaskSchedulerApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'Task Scheduler',
+      debugShowCheckedModeBanner: false,
       theme: theme,
       darkTheme: AppTheme.darkTheme,
       themeMode: selectedTheme == MoodTheme.night

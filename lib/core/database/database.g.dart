@@ -1274,6 +1274,19 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isDoneMeta = const VerificationMeta('isDone');
+  @override
+  late final GeneratedColumn<bool> isDone = GeneratedColumn<bool>(
+    'is_done',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_done" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1305,6 +1318,7 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
     endTime,
     isRepeating,
     recurrenceRule,
+    isDone,
     createdAt,
     updatedAt,
   ];
@@ -1373,6 +1387,12 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
         ),
       );
     }
+    if (data.containsKey('is_done')) {
+      context.handle(
+        _isDoneMeta,
+        isDone.isAcceptableOrUnknown(data['is_done']!, _isDoneMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1426,6 +1446,10 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
         DriftSqlType.string,
         data['${effectivePrefix}recurrence_rule'],
       ),
+      isDone: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_done'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1451,6 +1475,7 @@ class Event extends DataClass implements Insertable<Event> {
   final DateTime endTime;
   final bool isRepeating;
   final String? recurrenceRule;
+  final bool isDone;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Event({
@@ -1461,6 +1486,7 @@ class Event extends DataClass implements Insertable<Event> {
     required this.endTime,
     required this.isRepeating,
     this.recurrenceRule,
+    required this.isDone,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -1478,6 +1504,7 @@ class Event extends DataClass implements Insertable<Event> {
     if (!nullToAbsent || recurrenceRule != null) {
       map['recurrence_rule'] = Variable<String>(recurrenceRule);
     }
+    map['is_done'] = Variable<bool>(isDone);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -1496,6 +1523,7 @@ class Event extends DataClass implements Insertable<Event> {
       recurrenceRule: recurrenceRule == null && nullToAbsent
           ? const Value.absent()
           : Value(recurrenceRule),
+      isDone: Value(isDone),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -1514,6 +1542,7 @@ class Event extends DataClass implements Insertable<Event> {
       endTime: serializer.fromJson<DateTime>(json['endTime']),
       isRepeating: serializer.fromJson<bool>(json['isRepeating']),
       recurrenceRule: serializer.fromJson<String?>(json['recurrenceRule']),
+      isDone: serializer.fromJson<bool>(json['isDone']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -1529,6 +1558,7 @@ class Event extends DataClass implements Insertable<Event> {
       'endTime': serializer.toJson<DateTime>(endTime),
       'isRepeating': serializer.toJson<bool>(isRepeating),
       'recurrenceRule': serializer.toJson<String?>(recurrenceRule),
+      'isDone': serializer.toJson<bool>(isDone),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -1542,6 +1572,7 @@ class Event extends DataClass implements Insertable<Event> {
     DateTime? endTime,
     bool? isRepeating,
     Value<String?> recurrenceRule = const Value.absent(),
+    bool? isDone,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Event(
@@ -1554,6 +1585,7 @@ class Event extends DataClass implements Insertable<Event> {
     recurrenceRule: recurrenceRule.present
         ? recurrenceRule.value
         : this.recurrenceRule,
+    isDone: isDone ?? this.isDone,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -1570,6 +1602,7 @@ class Event extends DataClass implements Insertable<Event> {
       recurrenceRule: data.recurrenceRule.present
           ? data.recurrenceRule.value
           : this.recurrenceRule,
+      isDone: data.isDone.present ? data.isDone.value : this.isDone,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1585,6 +1618,7 @@ class Event extends DataClass implements Insertable<Event> {
           ..write('endTime: $endTime, ')
           ..write('isRepeating: $isRepeating, ')
           ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('isDone: $isDone, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1600,6 +1634,7 @@ class Event extends DataClass implements Insertable<Event> {
     endTime,
     isRepeating,
     recurrenceRule,
+    isDone,
     createdAt,
     updatedAt,
   );
@@ -1614,6 +1649,7 @@ class Event extends DataClass implements Insertable<Event> {
           other.endTime == this.endTime &&
           other.isRepeating == this.isRepeating &&
           other.recurrenceRule == this.recurrenceRule &&
+          other.isDone == this.isDone &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1626,6 +1662,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
   final Value<DateTime> endTime;
   final Value<bool> isRepeating;
   final Value<String?> recurrenceRule;
+  final Value<bool> isDone;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -1637,6 +1674,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
     this.endTime = const Value.absent(),
     this.isRepeating = const Value.absent(),
     this.recurrenceRule = const Value.absent(),
+    this.isDone = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1649,6 +1687,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
     required DateTime endTime,
     this.isRepeating = const Value.absent(),
     this.recurrenceRule = const Value.absent(),
+    this.isDone = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -1666,6 +1705,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
     Expression<DateTime>? endTime,
     Expression<bool>? isRepeating,
     Expression<String>? recurrenceRule,
+    Expression<bool>? isDone,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -1678,6 +1718,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
       if (endTime != null) 'end_time': endTime,
       if (isRepeating != null) 'is_repeating': isRepeating,
       if (recurrenceRule != null) 'recurrence_rule': recurrenceRule,
+      if (isDone != null) 'is_done': isDone,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -1692,6 +1733,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
     Value<DateTime>? endTime,
     Value<bool>? isRepeating,
     Value<String?>? recurrenceRule,
+    Value<bool>? isDone,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -1704,6 +1746,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
       endTime: endTime ?? this.endTime,
       isRepeating: isRepeating ?? this.isRepeating,
       recurrenceRule: recurrenceRule ?? this.recurrenceRule,
+      isDone: isDone ?? this.isDone,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -1734,6 +1777,9 @@ class EventsCompanion extends UpdateCompanion<Event> {
     if (recurrenceRule.present) {
       map['recurrence_rule'] = Variable<String>(recurrenceRule.value);
     }
+    if (isDone.present) {
+      map['is_done'] = Variable<bool>(isDone.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1756,6 +1802,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
           ..write('endTime: $endTime, ')
           ..write('isRepeating: $isRepeating, ')
           ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('isDone: $isDone, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -2651,6 +2698,7 @@ typedef $$EventsTableCreateCompanionBuilder =
       required DateTime endTime,
       Value<bool> isRepeating,
       Value<String?> recurrenceRule,
+      Value<bool> isDone,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -2664,6 +2712,7 @@ typedef $$EventsTableUpdateCompanionBuilder =
       Value<DateTime> endTime,
       Value<bool> isRepeating,
       Value<String?> recurrenceRule,
+      Value<bool> isDone,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -2727,6 +2776,11 @@ class $$EventsTableFilterComposer
 
   ColumnFilters<String> get recurrenceRule => $composableBuilder(
     column: $table.recurrenceRule,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDone => $composableBuilder(
+    column: $table.isDone,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2803,6 +2857,11 @@ class $$EventsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isDone => $composableBuilder(
+    column: $table.isDone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -2867,6 +2926,9 @@ class $$EventsTableAnnotationComposer
     column: $table.recurrenceRule,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get isDone =>
+      $composableBuilder(column: $table.isDone, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -2933,6 +2995,7 @@ class $$EventsTableTableManager
                 Value<DateTime> endTime = const Value.absent(),
                 Value<bool> isRepeating = const Value.absent(),
                 Value<String?> recurrenceRule = const Value.absent(),
+                Value<bool> isDone = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -2944,6 +3007,7 @@ class $$EventsTableTableManager
                 endTime: endTime,
                 isRepeating: isRepeating,
                 recurrenceRule: recurrenceRule,
+                isDone: isDone,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -2957,6 +3021,7 @@ class $$EventsTableTableManager
                 required DateTime endTime,
                 Value<bool> isRepeating = const Value.absent(),
                 Value<String?> recurrenceRule = const Value.absent(),
+                Value<bool> isDone = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -2968,6 +3033,7 @@ class $$EventsTableTableManager
                 endTime: endTime,
                 isRepeating: isRepeating,
                 recurrenceRule: recurrenceRule,
+                isDone: isDone,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

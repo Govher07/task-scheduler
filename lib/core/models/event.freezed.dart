@@ -28,6 +28,7 @@ mixin _$Event {
   DateTime get endTime => throw _privateConstructorUsedError;
   bool get isRepeating => throw _privateConstructorUsedError;
   String? get recurrenceRule => throw _privateConstructorUsedError;
+  bool get isDone => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -53,6 +54,7 @@ abstract class $EventCopyWith<$Res> {
     DateTime endTime,
     bool isRepeating,
     String? recurrenceRule,
+    bool isDone,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -80,6 +82,7 @@ class _$EventCopyWithImpl<$Res, $Val extends Event>
     Object? endTime = null,
     Object? isRepeating = null,
     Object? recurrenceRule = freezed,
+    Object? isDone = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -113,6 +116,10 @@ class _$EventCopyWithImpl<$Res, $Val extends Event>
                 ? _value.recurrenceRule
                 : recurrenceRule // ignore: cast_nullable_to_non_nullable
                       as String?,
+            isDone: null == isDone
+                ? _value.isDone
+                : isDone // ignore: cast_nullable_to_non_nullable
+                      as bool,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -143,6 +150,7 @@ abstract class _$$EventImplCopyWith<$Res> implements $EventCopyWith<$Res> {
     DateTime endTime,
     bool isRepeating,
     String? recurrenceRule,
+    bool isDone,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -169,6 +177,7 @@ class __$$EventImplCopyWithImpl<$Res>
     Object? endTime = null,
     Object? isRepeating = null,
     Object? recurrenceRule = freezed,
+    Object? isDone = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -202,6 +211,10 @@ class __$$EventImplCopyWithImpl<$Res>
             ? _value.recurrenceRule
             : recurrenceRule // ignore: cast_nullable_to_non_nullable
                   as String?,
+        isDone: null == isDone
+            ? _value.isDone
+            : isDone // ignore: cast_nullable_to_non_nullable
+                  as bool,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -226,6 +239,7 @@ class _$EventImpl implements _Event {
     required this.endTime,
     this.isRepeating = false,
     this.recurrenceRule,
+    this.isDone = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -249,13 +263,16 @@ class _$EventImpl implements _Event {
   @override
   final String? recurrenceRule;
   @override
+  @JsonKey()
+  final bool isDone;
+  @override
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'Event(id: $id, name: $name, taskId: $taskId, startTime: $startTime, endTime: $endTime, isRepeating: $isRepeating, recurrenceRule: $recurrenceRule, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Event(id: $id, name: $name, taskId: $taskId, startTime: $startTime, endTime: $endTime, isRepeating: $isRepeating, recurrenceRule: $recurrenceRule, isDone: $isDone, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -273,6 +290,7 @@ class _$EventImpl implements _Event {
                 other.isRepeating == isRepeating) &&
             (identical(other.recurrenceRule, recurrenceRule) ||
                 other.recurrenceRule == recurrenceRule) &&
+            (identical(other.isDone, isDone) || other.isDone == isDone) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -290,6 +308,7 @@ class _$EventImpl implements _Event {
     endTime,
     isRepeating,
     recurrenceRule,
+    isDone,
     createdAt,
     updatedAt,
   );
@@ -317,6 +336,7 @@ abstract class _Event implements Event {
     required final DateTime endTime,
     final bool isRepeating,
     final String? recurrenceRule,
+    final bool isDone,
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _$EventImpl;
@@ -337,6 +357,8 @@ abstract class _Event implements Event {
   bool get isRepeating;
   @override
   String? get recurrenceRule;
+  @override
+  bool get isDone;
   @override
   DateTime get createdAt;
   @override

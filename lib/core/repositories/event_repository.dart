@@ -28,6 +28,7 @@ class DriftEventRepository implements EventRepository {
       endTime: row.endTime,
       isRepeating: row.isRepeating,
       recurrenceRule: row.recurrenceRule,
+      isDone: row.isDone,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     );
@@ -42,6 +43,7 @@ class DriftEventRepository implements EventRepository {
       endTime: Value(event.endTime),
       isRepeating: Value(event.isRepeating),
       recurrenceRule: Value(event.recurrenceRule),
+      isDone: Value(event.isDone),
       createdAt: Value(event.createdAt),
       updatedAt: Value(event.updatedAt),
     );

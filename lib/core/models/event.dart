@@ -13,6 +13,7 @@ class Event with _$Event {
     required DateTime endTime,
     @Default(false) bool isRepeating,
     String? recurrenceRule,
+    @Default(false) bool isDone,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Event;
