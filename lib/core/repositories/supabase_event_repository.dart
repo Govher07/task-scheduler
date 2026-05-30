@@ -98,4 +98,15 @@ class SupabaseEventRepository implements EventRepository {
             !e.startTime.isBefore(start) && e.startTime.isBefore(end))
         .toList());
   }
+
+  @override
+  Stream<List<Event>> watchAllRepeatingEvents() {
+    return _client
+        .from('events')
+        .stream(primaryKey: ['id'])
+        .map((rows) => rows
+            .map(_fromRow)
+            .where((e) => e.isRepeating)
+            .toList());
+  }
 }

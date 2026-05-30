@@ -12,6 +12,8 @@ abstract class EventRepository {
   Future<void> deleteEvent(String id);
   Stream<List<model.Event>> watchEventsByDate(DateTime date);
   Stream<List<model.Event>> watchEventsByDateRange(DateTime start, DateTime end);
+  /// Streams every event that has [isRepeating] == true, regardless of date.
+  Stream<List<model.Event>> watchAllRepeatingEvents();
 }
 
 class DriftEventRepository implements EventRepository {
@@ -104,6 +106,13 @@ class DriftEventRepository implements EventRepository {
   Stream<List<model.Event>> watchEventsByDateRange(DateTime start, DateTime end) {
     return (_db.select(_db.events)
           ..where((t) => t.startTime.isBiggerOrEqualValue(start) & t.startTime.isSmallerThanValue(end)))
+        .watch()
+        .map((rows) => rows.map(_toModel).toList());
+  }
+
+  @override
+  Stream<List<model.Event>> watchAllRepeatingEvents() {
+    return (_db.select(_db.events)..where((t) => t.isRepeating.equals(true)))
         .watch()
         .map((rows) => rows.map(_toModel).toList());
   }

@@ -47,7 +47,10 @@ const tools: Anthropic.Tool[] = [
     input_schema: {
       type: "object",
       properties: {
-        name: { type: "string", description: "Event title" },
+        name: {
+          type: "string",
+          description: "Event title. Extract a concise and descriptive title from the user's message (e.g., 'Meeting with ABC', '1:1 with XYZ'). If no specific details can be gleaned, use 'Meeting' as the fallback.",
+        },
         start_time: {
           type: "string",
           description: "Start datetime in ISO 8601 format",
@@ -430,7 +433,8 @@ Guidelines:
 - Use tools to read data before making changes so you can reference real names and IDs.
 - For destructive operations (delete), confirm with the user first unless they've already confirmed.
 - Be concise and friendly.
-- Always respond in the same language the user writes in.`;
+- Always respond in the same language the user writes in.
+- When creating events, intelligently parse the title. Do not include time/date words in the title (e.g., use "Meeting" instead of "A meeting tomorrow at 3pm"). Fallback to "Meeting" if no specific details can be gleaned from the message.`;
 
     // Agentic loop — keep going until Claude stops calling tools
     let currentMessages: Anthropic.MessageParam[] = [...messages];
