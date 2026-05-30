@@ -197,7 +197,7 @@ class AppShell extends StatelessWidget {
         NavigationDestination(
           icon: Icon(Icons.gamepad_outlined),
           selectedIcon: Icon(Icons.gamepad),
-          label: 'Gaming',
+          label: 'My room',
         ),
         NavigationDestination(
           icon: Icon(Icons.calendar_month_outlined),

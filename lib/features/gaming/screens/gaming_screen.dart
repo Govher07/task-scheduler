@@ -458,6 +458,7 @@ class _ShopPageState extends ConsumerState<_ShopPage> {
     try {
       await ref.read(rewardServiceProvider).purchaseItem(item.id, item.price);
       await _loadData();
+      ref.invalidate(rewardBalanceProvider);
       if (mounted) {
         ScaffoldMessenger.of(
           context,
