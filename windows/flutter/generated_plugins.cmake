@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
+  rive_native
   sqlite3_flutter_libs
   url_launcher_windows
 )
