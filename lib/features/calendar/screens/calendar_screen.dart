@@ -923,6 +923,14 @@ class _ChatBoxState extends ConsumerState<_ChatBox> {
                             fontStyle: FontStyle.italic,
                           ),
                         ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Or: "What should I work on? I have 30 minutes"',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.outline,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
                       ],
                     ),
                   )
