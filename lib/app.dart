@@ -15,7 +15,6 @@ import 'features/goals/screens/goal_form_screen.dart';
 import 'features/goals/screens/goals_screen.dart';
 import 'features/goals/screens/task_form_screen.dart';
 import 'features/lock/screens/lock_screen.dart';
-import 'features/lock/screens/lock_setup_screen.dart';
 import 'features/onboarding/screen/welcome_screen.dart';
 import 'features/recommender/screens/recommender_screen.dart';
 
@@ -96,11 +95,6 @@ final router = GoRouter(
           path: '/goals',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: GoalsScreen()),
-        ),
-        GoRoute(
-          path: '/lock/setup',
-          pageBuilder: (context, state) =>
-              const NoTransitionPage(child: LockSetupScreen()),
         ),
       ],
     ),
@@ -209,11 +203,6 @@ class AppShell extends StatelessWidget {
             selectedIcon: Icon(Icons.flag),
             label: 'My Goals',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.lock_outline),
-            selectedIcon: Icon(Icons.lock),
-            label: 'Lock',
-          ),
         ],
       ),
     );
@@ -226,7 +215,6 @@ class AppShell extends StatelessWidget {
     if (location.startsWith('/gaming')) return 1;
     if (location.startsWith('/calendar')) return 2;
     if (location.startsWith('/goals')) return 3;
-    if (location.startsWith('/lock')) return 4;
 
     return 0;
   }
@@ -241,8 +229,6 @@ class AppShell extends StatelessWidget {
         context.go('/calendar');
       case 3:
         context.go('/goals');
-      case 4:
-        context.go('/lock/setup');
     }
   }
 }
