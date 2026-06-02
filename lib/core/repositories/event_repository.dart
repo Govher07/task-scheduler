@@ -11,16 +11,9 @@ abstract class EventRepository {
   Future<void> updateEvent(model.Event event);
   Future<void> deleteEvent(String id);
   Stream<List<model.Event>> watchEventsByDate(DateTime date);
-<<<<<<< HEAD
-  Stream<List<model.Event>> watchEventsByDateRange(
-    DateTime start,
-    DateTime end,
-  );
-=======
   Stream<List<model.Event>> watchEventsByDateRange(DateTime start, DateTime end);
   /// Streams every event that has [isRepeating] == true, regardless of date.
   Stream<List<model.Event>> watchAllRepeatingEvents();
->>>>>>> upstream/main
 }
 
 class DriftEventRepository implements EventRepository {

@@ -165,16 +165,7 @@ class _GamingScreenState extends ConsumerState<GamingScreen> {
               child: GestureDetector(
                 onTap: () => _openSlotPicker(slotType),
                 child: item != null
-<<<<<<< HEAD
-                    ? Image.asset(
-                        item.asset,
-                        width: size,
-                        height: size,
-                        fit: BoxFit.contain,
-                      )
-=======
                     ? _SlotItemDisplay(item: item, size: size)
->>>>>>> upstream/main
                     : _EmptySlot(size: size),
               ),
             );
