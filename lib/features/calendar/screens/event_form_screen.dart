@@ -386,8 +386,14 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
+<<<<<<< HEAD
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+=======
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+>>>>>>> upstream/main
           title: Row(
             children: [
               Icon(

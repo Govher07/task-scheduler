@@ -9,7 +9,7 @@ import '../providers/goals_provider.dart';
 import '../widgets/goal_section.dart';
 import '../widgets/sort_controls.dart';
 import '../widgets/task_tile.dart';
-
+import '../../../core/widgets/seasonal_background.dart';
 
 class GoalsScreen extends ConsumerWidget {
   const GoalsScreen({super.key});
@@ -20,9 +20,7 @@ class GoalsScreen extends ConsumerWidget {
     final ungroupedAsync = ref.watch(ungroupedTasksProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Goals'),
-      ),
+      appBar: AppBar(title: const Text('My Goals')),
       body: goalsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
@@ -39,7 +37,17 @@ class GoalsScreen extends ConsumerWidget {
 
           return ListView(
             children: [
-              const SortControls(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+                child: SnowCapped(
+                  borderRadius: 22,
+                  snowHeight: 10,
+                  horizontalInset: 10,
+                  snowWidthFactor: 0.92,
+                  child: const SortControls(),
+                ),
+              ),
+
               ...goals.map((goal) {
                 final tasksAsync = ref.watch(tasksByGoalProvider(goal.id));
                 final tasks = tasksAsync.valueOrNull ?? [];

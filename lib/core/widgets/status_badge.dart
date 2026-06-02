@@ -16,24 +16,34 @@ class StatusBadge extends StatelessWidget {
       ),
       child: Text(
         _label,
-        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _color),
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: _color,
+        ),
       ),
     );
   }
 
   String get _label {
     switch (status) {
-      case TaskStatus.todo: return 'TO DO';
-      case TaskStatus.inProgress: return 'IN PROGRESS';
-      case TaskStatus.done: return 'DONE';
+      case TaskStatus.todo:
+        return 'TO DO';
+      case TaskStatus.inProgress:
+        return 'IN PROGRESS';
+      case TaskStatus.done:
+        return 'DONE';
     }
   }
 
   Color get _color {
     switch (status) {
-      case TaskStatus.todo: return Colors.grey;
-      case TaskStatus.inProgress: return Colors.blue;
-      case TaskStatus.done: return Colors.green;
+      case TaskStatus.todo:
+        return Colors.grey;
+      case TaskStatus.inProgress:
+        return Colors.blue;
+      case TaskStatus.done:
+        return Colors.green;
     }
   }
 }

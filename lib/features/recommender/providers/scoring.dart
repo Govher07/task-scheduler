@@ -5,9 +5,12 @@ int scoreTask(Task task, DateTime now) {
   int score = 0;
 
   switch (task.priority) {
-    case Priority.high: score += 30;
-    case Priority.medium: score += 20;
-    case Priority.low: score += 10;
+    case Priority.high:
+      score += 30;
+    case Priority.medium:
+      score += 20;
+    case Priority.low:
+      score += 10;
   }
 
   if (task.deadline != null) {

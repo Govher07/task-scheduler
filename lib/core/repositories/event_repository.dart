@@ -11,9 +11,16 @@ abstract class EventRepository {
   Future<void> updateEvent(model.Event event);
   Future<void> deleteEvent(String id);
   Stream<List<model.Event>> watchEventsByDate(DateTime date);
+<<<<<<< HEAD
+  Stream<List<model.Event>> watchEventsByDateRange(
+    DateTime start,
+    DateTime end,
+  );
+=======
   Stream<List<model.Event>> watchEventsByDateRange(DateTime start, DateTime end);
   /// Streams every event that has [isRepeating] == true, regardless of date.
   Stream<List<model.Event>> watchAllRepeatingEvents();
+>>>>>>> upstream/main
 }
 
 class DriftEventRepository implements EventRepository {
@@ -58,8 +65,9 @@ class DriftEventRepository implements EventRepository {
 
   @override
   Future<model.Event?> getEventById(String id) async {
-    final row = await (_db.select(_db.events)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.events,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row == null ? null : _toModel(row);
   }
 
@@ -70,10 +78,17 @@ class DriftEventRepository implements EventRepository {
   }
 
   @override
-  Future<List<model.Event>> getEventsByDateRange(DateTime start, DateTime end) async {
-    final rows = await (_db.select(_db.events)
-          ..where((t) => t.startTime.isBiggerOrEqualValue(start) & t.startTime.isSmallerThanValue(end)))
-        .get();
+  Future<List<model.Event>> getEventsByDateRange(
+    DateTime start,
+    DateTime end,
+  ) async {
+    final rows =
+        await (_db.select(_db.events)..where(
+              (t) =>
+                  t.startTime.isBiggerOrEqualValue(start) &
+                  t.startTime.isSmallerThanValue(end),
+            ))
+            .get();
     return rows.map(_toModel).toList();
   }
 
@@ -86,8 +101,9 @@ class DriftEventRepository implements EventRepository {
 
   @override
   Future<void> updateEvent(model.Event event) async {
-    await (_db.update(_db.events)..where((t) => t.id.equals(event.id)))
-        .write(_toCompanion(event));
+    await (_db.update(
+      _db.events,
+    )..where((t) => t.id.equals(event.id))).write(_toCompanion(event));
   }
 
   @override
@@ -103,9 +119,15 @@ class DriftEventRepository implements EventRepository {
   }
 
   @override
-  Stream<List<model.Event>> watchEventsByDateRange(DateTime start, DateTime end) {
-    return (_db.select(_db.events)
-          ..where((t) => t.startTime.isBiggerOrEqualValue(start) & t.startTime.isSmallerThanValue(end)))
+  Stream<List<model.Event>> watchEventsByDateRange(
+    DateTime start,
+    DateTime end,
+  ) {
+    return (_db.select(_db.events)..where(
+          (t) =>
+              t.startTime.isBiggerOrEqualValue(start) &
+              t.startTime.isSmallerThanValue(end),
+        ))
         .watch()
         .map((rows) => rows.map(_toModel).toList());
   }

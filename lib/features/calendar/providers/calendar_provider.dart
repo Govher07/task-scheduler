@@ -10,13 +10,9 @@ final calendarViewModeProvider = StateProvider<CalendarViewMode>(
   (ref) => CalendarViewMode.monthly,
 );
 
-final selectedDateProvider = StateProvider<DateTime>(
-  (ref) => DateTime.now(),
-);
+final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
-final focusedMonthProvider = StateProvider<DateTime>(
-  (ref) => DateTime.now(),
-);
+final focusedMonthProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
 // ---------------------------------------------------------------------------
 // All repeating events (needed for recurrence expansion across any window).

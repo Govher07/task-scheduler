@@ -47,3 +47,7 @@ final eventRepositoryProvider = Provider<EventRepository>((ref) {
 final rewardServiceProvider = Provider<RewardService>((ref) {
   return RewardService(ref.watch(supabaseClientProvider));
 });
+
+final rewardBalanceProvider = FutureProvider<int>((ref) async {
+  return ref.watch(rewardServiceProvider).getBalance();
+});

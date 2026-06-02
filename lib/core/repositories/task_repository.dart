@@ -61,8 +61,9 @@ class DriftTaskRepository implements TaskRepository {
 
   @override
   Future<model.Task?> getTaskById(String id) async {
-    final row = await (_db.select(_db.tasks)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.tasks,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row == null ? null : _toModel(row);
   }
 
@@ -74,32 +75,38 @@ class DriftTaskRepository implements TaskRepository {
 
   @override
   Future<List<model.Task>> getTasksByGoalId(String goalId) async {
-    final rows = await (_db.select(_db.tasks)
-          ..where((t) => t.goalId.equals(goalId)))
-        .get();
+    final rows = await (_db.select(
+      _db.tasks,
+    )..where((t) => t.goalId.equals(goalId))).get();
     return rows.map(_toModel).toList();
   }
 
   @override
   Future<List<model.Task>> getUngroupedTasks() async {
-    final rows = await (_db.select(_db.tasks)
-          ..where((t) => t.goalId.isNull()))
-        .get();
+    final rows = await (_db.select(
+      _db.tasks,
+    )..where((t) => t.goalId.isNull())).get();
     return rows.map(_toModel).toList();
   }
 
   @override
   Future<List<model.Task>> getIncompleteTasks() async {
-    final rows = await (_db.select(_db.tasks)
-          ..where((t) => t.status.isIn([TaskStatus.todo.index, TaskStatus.inProgress.index])))
-        .get();
+    final rows =
+        await (_db.select(_db.tasks)..where(
+              (t) => t.status.isIn([
+                TaskStatus.todo.index,
+                TaskStatus.inProgress.index,
+              ]),
+            ))
+            .get();
     return rows.map(_toModel).toList();
   }
 
   @override
   Future<void> updateTask(model.Task task) async {
-    await (_db.update(_db.tasks)..where((t) => t.id.equals(task.id)))
-        .write(_toCompanion(task));
+    await (_db.update(
+      _db.tasks,
+    )..where((t) => t.id.equals(task.id))).write(_toCompanion(task));
   }
 
   @override
@@ -116,15 +123,16 @@ class DriftTaskRepository implements TaskRepository {
 
   @override
   Stream<List<model.Task>> watchUngroupedTasks() {
-    return (_db.select(_db.tasks)..where((t) => t.goalId.isNull()))
-        .watch()
-        .map((rows) => rows.map(_toModel).toList());
+    return (_db.select(_db.tasks)..where((t) => t.goalId.isNull())).watch().map(
+      (rows) => rows.map(_toModel).toList(),
+    );
   }
 
   @override
   Stream<List<model.Task>> watchAllTasks() {
-    return _db.select(_db.tasks).watch().map(
-          (rows) => rows.map(_toModel).toList(),
-        );
+    return _db
+        .select(_db.tasks)
+        .watch()
+        .map((rows) => rows.map(_toModel).toList());
   }
 }

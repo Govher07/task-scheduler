@@ -18,16 +18,22 @@ class _Item {
   final int price;
   final _Cat cat;
   final String? desc;
-  const _Item(this.id, this.asset, this.name, this.price,
-      {required this.cat, this.desc});
+  const _Item(
+    this.id,
+    this.asset,
+    this.name,
+    this.price, {
+    required this.cat,
+    this.desc,
+  });
 }
 
 _Cat _catFromString(String s) => switch (s) {
-  'animals'    => _Cat.animals,
-  'plants'     => _Cat.plants,
-  'decor'      => _Cat.decor,
+  'animals' => _Cat.animals,
+  'plants' => _Cat.plants,
+  'decor' => _Cat.decor,
   'characters' => _Cat.characters,
-  _            => _Cat.all,
+  _ => _Cat.all,
 };
 
 _Item _itemFromRow(Map<String, dynamic> r) => _Item(
@@ -49,19 +55,25 @@ class GamingScreen extends ConsumerStatefulWidget {
 
 class _GamingScreenState extends ConsumerState<GamingScreen> {
   Map<String, _Item?> _slots = {
-    'animals': null, 'plants': null, 'decor': null, 'characters': null,
+    'animals': null,
+    'plants': null,
+    'decor': null,
+    'characters': null,
   };
 
   // Positions as fractions of screen (dx, dy from center: -1=edge, 0=center, 1=edge)
   static const _slotAlignments = {
-    'plants':     Alignment(-1.10, -0.10),
-    'decor':      Alignment(-0.80,  0.20),
-    'characters': Alignment( 0.65,  -0.05),
-    'animals':    Alignment( -0.10,  0.70),
+    'plants': Alignment(-1.10, -0.10),
+    'decor': Alignment(-0.80, 0.20),
+    'characters': Alignment(0.65, -0.05),
+    'animals': Alignment(-0.10, 0.70),
   };
 
   static const _slotSizes = {
-    'plants': 130.0, 'decor': 160.0, 'characters': 200.0, 'animals': 160.0,
+    'plants': 130.0,
+    'decor': 160.0,
+    'characters': 200.0,
+    'animals': 160.0,
   };
 
   @override
@@ -74,7 +86,9 @@ class _GamingScreenState extends ConsumerState<GamingScreen> {
     final data = await ref.read(rewardServiceProvider).getRoomSlots();
     if (mounted) {
       setState(() {
-        _slots = data.map((k, v) => MapEntry(k, v != null ? _itemFromRow(v) : null));
+        _slots = data.map(
+          (k, v) => MapEntry(k, v != null ? _itemFromRow(v) : null),
+        );
       });
     }
   }
@@ -101,12 +115,17 @@ class _GamingScreenState extends ConsumerState<GamingScreen> {
         onSelect: (item) async {
           Navigator.pop(ctx);
           try {
-            await ref.read(rewardServiceProvider).setRoomSlot(slotType, item?.id);
+            await ref
+                .read(rewardServiceProvider)
+                .setRoomSlot(slotType, item?.id);
             await _loadSlots();
           } catch (e) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                SnackBar(
+                  content: Text('Error: $e'),
+                  backgroundColor: Colors.red,
+                ),
               );
             }
           }
@@ -146,7 +165,16 @@ class _GamingScreenState extends ConsumerState<GamingScreen> {
               child: GestureDetector(
                 onTap: () => _openSlotPicker(slotType),
                 child: item != null
+<<<<<<< HEAD
+                    ? Image.asset(
+                        item.asset,
+                        width: size,
+                        height: size,
+                        fit: BoxFit.contain,
+                      )
+=======
                     ? _SlotItemDisplay(item: item, size: size)
+>>>>>>> upstream/main
                     : _EmptySlot(size: size),
               ),
             );
@@ -189,13 +217,19 @@ class _GamingScreenState extends ConsumerState<GamingScreen> {
 
   void _openShop(BuildContext context) {
     Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(fullscreenDialog: true, builder: (_) => const _ShopPage()),
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const _ShopPage(),
+      ),
     );
   }
 
   void _openBackpack(BuildContext context) {
     Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(fullscreenDialog: true, builder: (_) => const _BackpackPage()),
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const _BackpackPage(),
+      ),
     );
   }
 }
@@ -218,7 +252,11 @@ class _EmptySlot extends StatelessWidget {
           strokeAlign: BorderSide.strokeAlignInside,
         ),
       ),
-      child: Icon(Icons.add, color: Colors.white.withValues(alpha: 0.5), size: size * 0.35),
+      child: Icon(
+        Icons.add,
+        color: Colors.white.withValues(alpha: 0.5),
+        size: size * 0.35,
+      ),
     );
   }
 }
@@ -324,7 +362,11 @@ class _SlotPickerSheet extends StatelessWidget {
             children: [
               Text(
                 'Place $label',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _brown),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: _brown,
+                ),
               ),
               const Spacer(),
               if (currentItem != null)
@@ -366,10 +408,14 @@ class _SlotPickerSheet extends StatelessWidget {
                   onTap: () => onSelect(item),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isSelected ? _sage.withValues(alpha: 0.2) : _cardBg,
+                      color: isSelected
+                          ? _sage.withValues(alpha: 0.2)
+                          : _cardBg,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isSelected ? _sage : _brown.withValues(alpha: 0.2),
+                        color: isSelected
+                            ? _sage
+                            : _brown.withValues(alpha: 0.2),
                         width: isSelected ? 2 : 1,
                       ),
                     ),
@@ -385,7 +431,13 @@ class _SlotPickerSheet extends StatelessWidget {
                           padding: const EdgeInsets.only(bottom: 4),
                           child: Text(
                             item.name,
-                            style: TextStyle(fontSize: 9, color: _brown, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: _brown,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
@@ -458,19 +510,27 @@ class _ShopPageState extends ConsumerState<_ShopPage> {
 
   Future<void> _buyItem(_Item item) async {
     if (_balance < item.price) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Not enough coins!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Not enough coins!')));
       return;
     }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Buy ${item.name}?'),
-        content: Text('This will cost 🪙 ${item.price} coins.\nYour balance: 🪙 $_balance'),
+        content: Text(
+          'This will cost 🪙 ${item.price} coins.\nYour balance: 🪙 $_balance',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Buy')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Buy'),
+          ),
         ],
       ),
     );
@@ -478,16 +538,17 @@ class _ShopPageState extends ConsumerState<_ShopPage> {
     try {
       await ref.read(rewardServiceProvider).purchaseItem(item.id, item.price);
       await _loadData();
+      ref.invalidate(rewardBalanceProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${item.name} purchased!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('${item.name} purchased!')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Purchase failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Purchase failed: $e')));
       }
     }
   }
@@ -540,7 +601,11 @@ class _ShopPageState extends ConsumerState<_ShopPage> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: _brown.withValues(alpha: 0.3)),
             ),
-            child: const Icon(Icons.arrow_back_ios_new, color: _brown, size: 16),
+            child: const Icon(
+              Icons.arrow_back_ios_new,
+              color: _brown,
+              size: 16,
+            ),
           ),
         ),
         const Expanded(
@@ -638,18 +703,20 @@ class _ShopPageState extends ConsumerState<_ShopPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Row(children: [
-                            const Text('🌿', style: TextStyle(fontSize: 10)),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Featured',
-                              style: TextStyle(
-                                color: _sage,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
+                          Row(
+                            children: [
+                              const Text('🌿', style: TextStyle(fontSize: 10)),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Featured',
+                                style: TextStyle(
+                                  color: _sage,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                          ]),
+                            ],
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             item.name,
@@ -721,7 +788,8 @@ class _ShopPageState extends ConsumerState<_ShopPage> {
         mainAxisSpacing: 8,
       ),
       itemCount: items.length,
-      itemBuilder: (_, i) => _ItemCard(item: items[i], onBuy: () => _buyItem(items[i])),
+      itemBuilder: (_, i) =>
+          _ItemCard(item: items[i], onBuy: () => _buyItem(items[i])),
     );
   }
 
@@ -732,11 +800,18 @@ class _ShopPageState extends ConsumerState<_ShopPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.timer_outlined, color: _brown.withValues(alpha: 0.7), size: 13),
+          Icon(
+            Icons.timer_outlined,
+            color: _brown.withValues(alpha: 0.7),
+            size: 13,
+          ),
           const SizedBox(width: 4),
           Text(
             'New items in: 05h 32m',
-            style: TextStyle(color: _brown.withValues(alpha: 0.7), fontSize: 12),
+            style: TextStyle(
+              color: _brown.withValues(alpha: 0.7),
+              fontSize: 12,
+            ),
           ),
           const SizedBox(width: 4),
           const Text('🌸', style: TextStyle(fontSize: 12)),
@@ -879,7 +954,10 @@ class _ItemCard extends StatelessWidget {
                     ),
                     child: const Text(
                       'Buy',
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -943,9 +1021,15 @@ class _BackpackPageState extends ConsumerState<_BackpackPage> {
                           decoration: BoxDecoration(
                             color: _cardBg,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: _brown.withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: _brown.withValues(alpha: 0.3),
+                            ),
                           ),
-                          child: const Icon(Icons.arrow_back_ios_new, color: _brown, size: 16),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new,
+                            color: _brown,
+                            size: 16,
+                          ),
                         ),
                       ),
                       const Expanded(
@@ -957,7 +1041,11 @@ class _BackpackPageState extends ConsumerState<_BackpackPage> {
                               SizedBox(width: 6),
                               Text(
                                 'Backpack',
-                                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: _brown),
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: _brown,
+                                ),
                               ),
                               SizedBox(width: 6),
                               Text('🎒', style: TextStyle(fontSize: 16)),
@@ -970,7 +1058,9 @@ class _BackpackPageState extends ConsumerState<_BackpackPage> {
                   ),
                   const SizedBox(height: 16),
                   if (_loading)
-                    const Expanded(child: Center(child: CircularProgressIndicator()))
+                    const Expanded(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
                   else if (ownedItems.isEmpty)
                     Expanded(
                       child: Center(
@@ -981,12 +1071,19 @@ class _BackpackPageState extends ConsumerState<_BackpackPage> {
                             const SizedBox(height: 12),
                             Text(
                               'Your backpack is empty',
-                              style: TextStyle(color: _brown.withValues(alpha: 0.7), fontSize: 16, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                color: _brown.withValues(alpha: 0.7),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Buy items from the shop!',
-                              style: TextStyle(color: _brown.withValues(alpha: 0.5), fontSize: 13),
+                              style: TextStyle(
+                                color: _brown.withValues(alpha: 0.5),
+                                fontSize: 13,
+                              ),
                             ),
                           ],
                         ),
@@ -996,14 +1093,16 @@ class _BackpackPageState extends ConsumerState<_BackpackPage> {
                     Expanded(
                       child: GridView.builder(
                         padding: EdgeInsets.zero,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          childAspectRatio: 0.85,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              childAspectRatio: 0.85,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                            ),
                         itemCount: ownedItems.length,
-                        itemBuilder: (_, i) => _BackpackItemCard(item: ownedItems[i]),
+                        itemBuilder: (_, i) =>
+                            _BackpackItemCard(item: ownedItems[i]),
                       ),
                     ),
                 ],
@@ -1042,13 +1141,20 @@ class _BackpackItemCard extends StatelessWidget {
               children: [
                 Text(
                   item.name,
-                  style: const TextStyle(fontSize: 10, color: _brown, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: _brown,
+                    fontWeight: FontWeight.w600,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: _sage.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
@@ -1056,7 +1162,11 @@ class _BackpackItemCard extends StatelessWidget {
                   ),
                   child: const Text(
                     'Owned',
-                    style: TextStyle(fontSize: 9, color: _sage, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: _sage,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],

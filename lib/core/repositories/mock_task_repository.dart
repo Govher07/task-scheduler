@@ -46,8 +46,10 @@ class MockTaskRepository implements TaskRepository {
   @override
   Future<List<Task>> getIncompleteTasks() async {
     return _tasks
-        .where((t) =>
-            t.status == TaskStatus.todo || t.status == TaskStatus.inProgress)
+        .where(
+          (t) =>
+              t.status == TaskStatus.todo || t.status == TaskStatus.inProgress,
+        )
         .toList();
   }
 
@@ -67,15 +69,17 @@ class MockTaskRepository implements TaskRepository {
   @override
   Stream<List<Task>> watchTasksByGoalId(String goalId) {
     _emit();
-    return _controller.stream
-        .map((tasks) => tasks.where((t) => t.goalId == goalId).toList());
+    return _controller.stream.map(
+      (tasks) => tasks.where((t) => t.goalId == goalId).toList(),
+    );
   }
 
   @override
   Stream<List<Task>> watchUngroupedTasks() {
     _emit();
-    return _controller.stream
-        .map((tasks) => tasks.where((t) => t.goalId == null).toList());
+    return _controller.stream.map(
+      (tasks) => tasks.where((t) => t.goalId == null).toList(),
+    );
   }
 
   @override

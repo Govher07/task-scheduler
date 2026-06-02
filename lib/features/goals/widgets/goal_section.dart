@@ -26,7 +26,6 @@ class GoalSection extends ConsumerWidget {
     required this.onGoalTap,
   });
 
-  
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sortedTasks = ref.watch(sortedTasksProvider(tasks));
@@ -44,10 +43,10 @@ class GoalSection extends ConsumerWidget {
             Expanded(child: Text(goal.name)),
             if (goal.type == GoalType.completable && tasks.isNotEmpty) ...[
               Text(
-                  'progress\t\t\t\t',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                  ),
+                'progress\t\t\t\t',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                ),
               ),
               Text(
                 '${(progress * 100).round()}%',
@@ -58,7 +57,9 @@ class GoalSection extends ConsumerWidget {
               const SizedBox(width: 8),
             ],
             _GoalCoinBadge(
-              coins: goal.rewardCoins + RewardService.calcGoalDynamicBonus(goal, tasks.length),
+              coins:
+                  goal.rewardCoins +
+                  RewardService.calcGoalDynamicBonus(goal, tasks.length),
               collected: goal.gotRewards,
             ),
           ],

@@ -73,8 +73,9 @@ class MockEventRepository implements EventRepository {
   @override
   Stream<List<Event>> watchEventsByDateRange(DateTime start, DateTime end) {
     _emit();
-    return _controller.stream
-        .map((events) => _filterByRange(events, start, end));
+    return _controller.stream.map(
+      (events) => _filterByRange(events, start, end),
+    );
   }
 
   @override

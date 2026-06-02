@@ -21,8 +21,12 @@ final List<Goal> mockGoals = [
     name: 'Launch Side Project',
     type: GoalType.completable,
     description: 'Build and ship a Flutter app to the App Store.',
-    starttime: DateTime.parse('2026-04-27 14:13:43.101+00'), //DateTime(2026, 2, 1),
-    deadline: DateTime.parse('2026-06-27 14:13:43.101+00'), //DateTime(2026, 6, 30),
+    starttime: DateTime.parse(
+      '2026-04-27 14:13:43.101+00',
+    ), //DateTime(2026, 2, 1),
+    deadline: DateTime.parse(
+      '2026-06-27 14:13:43.101+00',
+    ), //DateTime(2026, 6, 30),
     createdAt: DateTime(2025, 2, 1),
     updatedAt: DateTime(2025, 3, 10),
   ),

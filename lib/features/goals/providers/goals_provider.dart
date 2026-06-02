@@ -12,7 +12,10 @@ final goalsListProvider = StreamProvider<List<Goal>>((ref) {
   return ref.watch(goalRepositoryProvider).watchAllGoals();
 });
 
-final tasksByGoalProvider = StreamProvider.family<List<Task>, String>((ref, goalId) {
+final tasksByGoalProvider = StreamProvider.family<List<Task>, String>((
+  ref,
+  goalId,
+) {
   return ref.watch(taskRepositoryProvider).watchTasksByGoalId(goalId);
 });
 
@@ -20,7 +23,10 @@ final ungroupedTasksProvider = StreamProvider<List<Task>>((ref) {
   return ref.watch(taskRepositoryProvider).watchUngroupedTasks();
 });
 
-final sortedTasksProvider = Provider.family<List<Task>, List<Task>>((ref, tasks) {
+final sortedTasksProvider = Provider.family<List<Task>, List<Task>>((
+  ref,
+  tasks,
+) {
   final sortField = ref.watch(sortFieldProvider);
   final sorted = List<Task>.from(tasks);
 

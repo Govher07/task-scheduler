@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/lock_provider.dart';
+import '../../../core/widgets/seasonal_background.dart';
 
 class LockScreen extends ConsumerStatefulWidget {
   const LockScreen({super.key});
@@ -65,23 +66,23 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                 Text(
                   'Screen Locked',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 48),
                 Text(
                   _format(remaining),
                   style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontWeight: FontWeight.w200,
-                        letterSpacing: 8,
-                      ),
+                    fontWeight: FontWeight.w200,
+                    letterSpacing: 8,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'remaining',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
+                    color: colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
                 ),
               ],
             ),

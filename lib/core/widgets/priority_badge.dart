@@ -41,4 +41,4 @@ class PriorityBadge extends StatelessWidget {
       ),
     );
   }
-} 
+}
