@@ -5,8 +5,8 @@ import 'scoring.dart';
 
 final skippedTaskIdsProvider = StateProvider<Set<String>>((ref) => {});
 
-final allTasksProvider = FutureProvider<List<Task>>((ref) {
-  return ref.watch(taskRepositoryProvider).getAllTasks();
+final allTasksProvider = StreamProvider<List<Task>>((ref) {
+  return ref.watch(taskRepositoryProvider).watchAllTasks();
 });
 
 final recommendedTaskProvider = Provider<Task?>((ref) {

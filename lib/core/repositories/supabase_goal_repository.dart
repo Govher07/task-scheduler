@@ -52,16 +52,12 @@ class SupabaseGoalRepository implements GoalRepository {
 
   @override
   Future<Goal?> getGoalById(String id) async {
-<<<<<<< HEAD
-    final row = await _client.from('goals').select().eq('id', id).maybeSingle();
-=======
     final row = await _client
         .from('goals')
         .select()
         .eq('id', id)
         .eq('user_id', _userId)
         .maybeSingle();
->>>>>>> upstream/main
     return row == null ? null : _fromRow(row);
   }
 
@@ -90,10 +86,7 @@ class SupabaseGoalRepository implements GoalRepository {
     return _client
         .from('goals')
         .stream(primaryKey: ['id'])
-<<<<<<< HEAD
-=======
         .eq('user_id', _userId)
->>>>>>> upstream/main
         .map((rows) => rows.map(_fromRow).toList());
   }
 }

@@ -4,21 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/models/enums.dart';
+import '../../../core/models/task.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme/theme_controller.dart';
-<<<<<<< HEAD
-import '../../../core/widgets/effort_indicator.dart';
-import '../../../core/widgets/priority_badge.dart';
-import '../../../core/widgets/seasonal_background.dart';
-=======
 import '../../../core/widgets/assistant_chat_sheet.dart';
 import '../../lock/providers/lock_provider.dart';
->>>>>>> upstream/main
 import '../providers/recommender_provider.dart';
-
-final rewardBalanceProvider = FutureProvider<int>((ref) async {
-  return ref.watch(rewardServiceProvider).getBalance();
-});
 
 class RecommenderScreen extends ConsumerWidget {
   const RecommenderScreen({super.key});
@@ -28,21 +19,19 @@ class RecommenderScreen extends ConsumerWidget {
     final tasksAsync = ref.watch(allTasksProvider);
     final balanceAsync = ref.watch(rewardBalanceProvider);
 
+    // Refresh balance whenever the task list changes (e.g. task marked done
+    // triggers a coin grant in the DB).
+    ref.listen<AsyncValue<List<Task>>>(allTasksProvider, (_, __) {
+      ref.invalidate(rewardBalanceProvider);
+    });
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-<<<<<<< HEAD
-      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Home'),
         centerTitle: true,
-        backgroundColor: colorScheme.surface.withValues(alpha: 0.72),
-=======
-      appBar: AppBar(
-        title: const Text('Home'),
-        centerTitle: true,
->>>>>>> upstream/main
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
         leading: IconButton(
@@ -104,32 +93,9 @@ class RecommenderScreen extends ConsumerWidget {
 
                             const SizedBox(height: 8),
 
-<<<<<<< HEAD
-                            recommended == null
-                                ? const _NoRecommendationCard()
-                                : _RecommendedTaskCard(
-                                    recommended: recommended,
-                                    onSkip: () {
-                                      final current = ref.read(
-                                        skippedTaskIdsProvider,
-                                      );
-
-                                      ref
-                                          .read(skippedTaskIdsProvider.notifier)
-                                          .state = {
-                                        ...current,
-                                        recommended.id,
-                                      };
-                                    },
-                                    onStart: () async {
-                                      final repo = ref.read(
-                                        taskRepositoryProvider,
-                                      );
-=======
                             const _AssistantChatCard(),
 
                             const SizedBox(height: 8),
->>>>>>> upstream/main
 
                             const _FocusCard(),
                           ],
@@ -146,68 +112,7 @@ class RecommenderScreen extends ConsumerWidget {
     );
   }
 
-<<<<<<< HEAD
-  Future<void> _markTaskDoneAndGrantRewards(WidgetRef ref, Task task) async {
-    final taskRepo = ref.read(taskRepositoryProvider);
-    final rewardService = ref.read(rewardServiceProvider);
-    final now = DateTime.now();
-
-    if (task.status == TaskStatus.done) {
-      return;
-    }
-
-    if (!task.gotRewards) {
-      await rewardService.grantTaskReward(task);
-
-      await taskRepo.updateTask(
-        task.copyWith(
-          status: TaskStatus.done,
-          gotRewards: true,
-          updatedAt: now,
-        ),
-      );
-    } else {
-      await taskRepo.updateTask(
-        task.copyWith(status: TaskStatus.done, updatedAt: now),
-      );
-    }
-
-    if (task.goalId == null) {
-      return;
-    }
-
-    final goalTasks = await taskRepo.getTasksByGoalId(task.goalId!);
-
-    final updatedGoalTasks = goalTasks.map((goalTask) {
-      if (goalTask.id == task.id) {
-        return goalTask.copyWith(status: TaskStatus.done);
-      }
-
-      return goalTask;
-    }).toList();
-
-    final allDone =
-        updatedGoalTasks.isNotEmpty &&
-        updatedGoalTasks.every(
-          (goalTask) => goalTask.status == TaskStatus.done,
-        );
-
-    if (!allDone) {
-      return;
-    }
-
-    final goalRepo = ref.read(goalRepositoryProvider);
-    final goal = await goalRepo.getGoalById(task.goalId!);
-
-    if (goal != null && !goal.gotRewards) {
-      await rewardService.grantGoalReward(goal, updatedGoalTasks.length);
-    }
-  }
-
   void _showThemePicker(BuildContext context, WidgetRef ref) {
-=======
-  void _showThemePicker(BuildContext context) {
->>>>>>> upstream/main
     showModalBottomSheet(
       context: context,
       useRootNavigator: true,
@@ -287,8 +192,9 @@ class RecommenderScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   onTap: () {
-                                    ref.read(moodThemeProvider.notifier).state =
-                                        theme;
+                                    ref
+                                        .read(moodThemeProvider.notifier)
+                                        .setTheme(theme);
                                     Navigator.pop(context);
                                   },
                                 ),
@@ -306,25 +212,6 @@ class RecommenderScreen extends ConsumerWidget {
         );
       },
     );
-  }
-
-  String _themeLabel(MoodTheme theme) {
-    switch (theme) {
-      case MoodTheme.classic:
-        return 'Classic';
-      case MoodTheme.calmBlue:
-        return 'Calm Blue';
-      case MoodTheme.warmCozy:
-        return 'Warm Cozy';
-      case MoodTheme.night:
-        return 'Night';
-      case MoodTheme.toonPop:
-        return 'Toon Pop';
-      case MoodTheme.winterFrost:
-        return 'Winter Frost';
-      case MoodTheme.springBloom:
-        return 'Spring Bloom';
-    }
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -354,37 +241,6 @@ class _RewardsSection extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-<<<<<<< HEAD
-      child: SnowCapped(
-        borderRadius: 18,
-        snowHeight: 10,
-        horizontalInset: 2,
-        child: Card(
-          margin: EdgeInsets.zero,
-          color: colorScheme.primaryContainer,
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.emoji_events,
-                        size: 20,
-                        color: colorScheme.onPrimary,
-=======
       child: Card(
         color: colorScheme.surfaceContainerHighest,
         elevation: 2,
@@ -418,28 +274,18 @@ class _RewardsSection extends StatelessWidget {
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: colorScheme.onSurface,
                         fontWeight: FontWeight.w800,
->>>>>>> upstream/main
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Rewards',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    TextButton.icon(
-                      onPressed: () {
-                        context.go('/gaming');
-                      },
-                      icon: const Icon(Icons.storefront_outlined, size: 18),
-                      label: const Text('Shop'),
-                    ),
-                  ],
-                ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      context.go('/gaming');
+                    },
+                    icon: const Icon(Icons.storefront_outlined, size: 18),
+                    label: const Text('Shop'),
+                  ),
+                ],
+              ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -472,7 +318,6 @@ class _RewardsSection extends StatelessWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }
@@ -563,205 +408,6 @@ class _AssistantChatCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-<<<<<<< HEAD
-    return SnowCapped(
-      borderRadius: 18,
-      snowHeight: 10,
-      horizontalInset: 2,
-      child: Card(
-        margin: EdgeInsets.zero,
-        color: colorScheme.surfaceContainerHighest,
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.lightbulb_outline,
-                size: 40,
-                color: colorScheme.primary,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Nothing to recommend',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'All tasks are done or skipped.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RecommendedTaskCard extends StatelessWidget {
-  const _RecommendedTaskCard({
-    required this.recommended,
-    required this.onSkip,
-    required this.onStart,
-    required this.onDone,
-  });
-
-  final Task recommended;
-  final VoidCallback onSkip;
-  final VoidCallback onStart;
-  final VoidCallback onDone;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.lightbulb, size: 34, color: colorScheme.primary),
-        const SizedBox(height: 6),
-        Text(
-          'You should work on:',
-          textAlign: TextAlign.center,
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: SnowCapped(
-            borderRadius: 18,
-            snowHeight: 10,
-            horizontalInset: 2,
-            child: Card(
-              margin: EdgeInsets.zero,
-              color: colorScheme.surfaceContainerHighest,
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      recommended.name,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        PriorityBadge(priority: recommended.priority),
-                        EffortIndicator(level: recommended.effortLevel),
-                        if (recommended.deadline != null)
-                          Chip(
-                            visualDensity: VisualDensity.compact,
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            backgroundColor: colorScheme.secondaryContainer,
-                            labelStyle: theme.textTheme.labelMedium?.copyWith(
-                              color: colorScheme.onSecondaryContainer,
-                            ),
-                            label: Text(
-                              'Due ${DateFormat('MMM d').format(recommended.deadline!)}',
-                            ),
-                          ),
-                        _RewardPreviewChip(task: recommended),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 18),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: double.infinity,
-              height: 42,
-              child: SnowCapped(
-                borderRadius: 22,
-                snowHeight: 10,
-                horizontalInset: 3,
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.play_arrow, size: 18),
-                  label: const Text('Start'),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(0, 42),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                  onPressed: onStart,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 42,
-                    child: SnowCapped(
-                      borderRadius: 22,
-                      snowHeight: 10,
-                      horizontalInset: 3,
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.skip_next, size: 18),
-                        label: const Text('Skip'),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(0, 42),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                        onPressed: onSkip,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: SizedBox(
-                    height: 42,
-                    child: SnowCapped(
-                      borderRadius: 22,
-                      snowHeight: 10,
-                      horizontalInset: 3,
-                      child: FilledButton.tonalIcon(
-                        icon: const Icon(Icons.check, size: 18),
-                        label: const Text('Done'),
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size(0, 42),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                        onPressed: onDone,
-                      ),
-                    ),
-=======
     return Card(
       color: colorScheme.surfaceContainerHighest,
       elevation: 2,
@@ -809,7 +455,6 @@ class _RecommendedTaskCard extends StatelessWidget {
                         ),
                       ),
                     ],
->>>>>>> upstream/main
                   ),
                 ),
               ],
@@ -871,17 +516,12 @@ class _RecommendedTaskCard extends StatelessWidget {
   }
 }
 
-<<<<<<< HEAD
-class _RewardPreviewChip extends StatelessWidget {
-  const _RewardPreviewChip({required this.task});
-=======
 class _Suggestion {
   const _Suggestion({
     required this.label,
     required this.icon,
     required this.prompt,
   });
->>>>>>> upstream/main
 
   final String label;
   final IconData icon;

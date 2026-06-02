@@ -51,10 +51,7 @@ class SupabaseEventRepository implements EventRepository {
         .from('events')
         .select()
         .eq('id', id)
-<<<<<<< HEAD
-=======
         .eq('user_id', _userId)
->>>>>>> upstream/main
         .maybeSingle();
     return row == null ? null : _fromRow(row);
   }
@@ -106,20 +103,6 @@ class SupabaseEventRepository implements EventRepository {
 
   @override
   Stream<List<Event>> watchEventsByDateRange(DateTime start, DateTime end) {
-<<<<<<< HEAD
-    return _client
-        .from('events')
-        .stream(primaryKey: ['id'])
-        .map(
-          (rows) => rows
-              .map(_fromRow)
-              .where(
-                (e) =>
-                    !e.startTime.isBefore(start) && e.startTime.isBefore(end),
-              )
-              .toList(),
-        );
-=======
     // stream() only supports one .eq() filter, so we filter user_id and date range in map
     final userId = _userId;
     return _client
@@ -140,6 +123,5 @@ class SupabaseEventRepository implements EventRepository {
         .stream(primaryKey: ['id'])
         .eq('user_id', _userId)
         .map((rows) => rows.map(_fromRow).where((e) => e.isRepeating).toList());
->>>>>>> upstream/main
   }
 }

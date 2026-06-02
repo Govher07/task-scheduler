@@ -6,7 +6,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
-import 'core/widgets/seasonal_background.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/register_screen.dart';
 import 'features/calendar/screens/calendar_screen.dart';
@@ -177,56 +176,7 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).uri.path;
-    final isGamingPage = location.startsWith('/gaming');
-
-    Widget bottomNav = NavigationBar(
-      selectedIndex: _calculateSelectedIndex(context),
-      onDestinationSelected: (index) => _onItemTapped(index, context),
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.gamepad_outlined),
-          selectedIcon: Icon(Icons.gamepad),
-          label: 'My room',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.calendar_month_outlined),
-          selectedIcon: Icon(Icons.calendar_month),
-          label: 'Calendar',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.flag_outlined),
-          selectedIcon: Icon(Icons.flag),
-          label: 'My Goals',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.lock_outline),
-          selectedIcon: Icon(Icons.lock),
-          label: 'Lock',
-        ),
-      ],
-    );
-
-    if (!isGamingPage) {
-      bottomNav = SnowCapped(borderRadius: 0, snowHeight: 7, child: bottomNav);
-    }
-
     return Scaffold(
-<<<<<<< HEAD
-      extendBody: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (!isGamingPage) const SeasonalBackground(),
-          child,
-          if (!isGamingPage) const SeasonalForegroundSnow(),
-=======
       body: child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _calculateSelectedIndex(context),
@@ -252,10 +202,8 @@ class AppShell extends StatelessWidget {
             selectedIcon: Icon(Icons.flag),
             label: 'My Goals',
           ),
->>>>>>> upstream/main
         ],
       ),
-      bottomNavigationBar: bottomNav,
     );
   }
 
@@ -283,13 +231,6 @@ class AppShell extends StatelessWidget {
         break;
       case 3:
         context.go('/goals');
-<<<<<<< HEAD
-        break;
-      case 4:
-        context.go('/lock/setup');
-        break;
-=======
->>>>>>> upstream/main
     }
   }
 }

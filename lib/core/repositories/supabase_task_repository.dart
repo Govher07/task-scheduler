@@ -58,16 +58,12 @@ class SupabaseTaskRepository implements TaskRepository {
 
   @override
   Future<Task?> getTaskById(String id) async {
-<<<<<<< HEAD
-    final row = await _client.from('tasks').select().eq('id', id).maybeSingle();
-=======
     final row = await _client
         .from('tasks')
         .select()
         .eq('id', id)
         .eq('user_id', _userId)
         .maybeSingle();
->>>>>>> upstream/main
     return row == null ? null : _fromRow(row);
   }
 
@@ -79,46 +75,31 @@ class SupabaseTaskRepository implements TaskRepository {
 
   @override
   Future<List<Task>> getTasksByGoalId(String goalId) async {
-<<<<<<< HEAD
-    final rows = await _client.from('tasks').select().eq('goal_id', goalId);
-=======
     final rows = await _client
         .from('tasks')
         .select()
         .eq('goal_id', goalId)
         .eq('user_id', _userId);
->>>>>>> upstream/main
     return rows.map(_fromRow).toList();
   }
 
   @override
   Future<List<Task>> getUngroupedTasks() async {
-<<<<<<< HEAD
-    final rows = await _client.from('tasks').select().isFilter('goal_id', null);
-=======
     final rows = await _client
         .from('tasks')
         .select()
         .eq('user_id', _userId)
         .isFilter('goal_id', null);
->>>>>>> upstream/main
     return rows.map(_fromRow).toList();
   }
 
   @override
   Future<List<Task>> getIncompleteTasks() async {
-<<<<<<< HEAD
-    final rows = await _client.from('tasks').select().inFilter('status', [
-      'todo',
-      'inProgress',
-    ]);
-=======
     final rows = await _client
         .from('tasks')
         .select()
         .eq('user_id', _userId)
         .inFilter('status', ['todo', 'inProgress']);
->>>>>>> upstream/main
     return rows.map(_fromRow).toList();
   }
 
@@ -155,15 +136,9 @@ class SupabaseTaskRepository implements TaskRepository {
     return _client
         .from('tasks')
         .stream(primaryKey: ['id'])
-<<<<<<< HEAD
-        .map(
-          (rows) => rows.map(_fromRow).where((t) => t.goalId == null).toList(),
-        );
-=======
         .eq('user_id', _userId)
         .map((rows) =>
             rows.map(_fromRow).where((t) => t.goalId == null).toList());
->>>>>>> upstream/main
   }
 
   @override
@@ -171,10 +146,7 @@ class SupabaseTaskRepository implements TaskRepository {
     return _client
         .from('tasks')
         .stream(primaryKey: ['id'])
-<<<<<<< HEAD
-=======
         .eq('user_id', _userId)
->>>>>>> upstream/main
         .map((rows) => rows.map(_fromRow).toList());
   }
 }
