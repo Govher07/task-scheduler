@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
+import 'core/widgets/seasonal_background.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/register_screen.dart';
 import 'features/calendar/screens/calendar_screen.dart';
@@ -176,8 +177,20 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).uri.path;
+    final isGamingPage = location.startsWith('/gaming');
+
     return Scaffold(
-      body: child,
+      extendBody: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (!isGamingPage) const SeasonalBackground(),
+          child,
+          if (!isGamingPage) const SeasonalForegroundSnow(),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _calculateSelectedIndex(context),
         onDestinationSelected: (index) => _onItemTapped(index, context),
