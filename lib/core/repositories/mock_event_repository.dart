@@ -77,4 +77,11 @@ class MockEventRepository implements EventRepository {
       (events) => _filterByRange(events, start, end),
     );
   }
+
+  @override
+  Stream<List<Event>> watchAllRepeatingEvents() {
+    _emit();
+    return _controller.stream
+        .map((events) => events.where((e) => e.isRepeating).toList());
+  }
 }

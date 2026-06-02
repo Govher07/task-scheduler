@@ -34,3 +34,6 @@ policy = "per_worker"
 
 [functions.ai-assistant]
 verify_jwt = false
+
+[functions.create-event]
+verify_jwt = false

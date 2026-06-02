@@ -9,6 +9,7 @@ class Events extends Table {
   DateTimeColumn get endTime => dateTime()();
   BoolColumn get isRepeating => boolean().withDefault(const Constant(false))();
   TextColumn get recurrenceRule => text().nullable()();
+  BoolColumn get isDone => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 

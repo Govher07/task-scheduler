@@ -8,6 +8,8 @@ class SupabaseTaskRepository implements TaskRepository {
 
   SupabaseTaskRepository(this._client);
 
+  String get _userId => _client.auth.currentUser!.id;
+
   Task _fromRow(Map<String, dynamic> row) {
     return Task(
       id: row['id'] as String,
@@ -56,54 +58,96 @@ class SupabaseTaskRepository implements TaskRepository {
 
   @override
   Future<Task?> getTaskById(String id) async {
+<<<<<<< HEAD
     final row = await _client.from('tasks').select().eq('id', id).maybeSingle();
+=======
+    final row = await _client
+        .from('tasks')
+        .select()
+        .eq('id', id)
+        .eq('user_id', _userId)
+        .maybeSingle();
+>>>>>>> upstream/main
     return row == null ? null : _fromRow(row);
   }
 
   @override
   Future<List<Task>> getAllTasks() async {
-    final rows = await _client.from('tasks').select();
+    final rows = await _client.from('tasks').select().eq('user_id', _userId);
     return rows.map(_fromRow).toList();
   }
 
   @override
   Future<List<Task>> getTasksByGoalId(String goalId) async {
+<<<<<<< HEAD
     final rows = await _client.from('tasks').select().eq('goal_id', goalId);
+=======
+    final rows = await _client
+        .from('tasks')
+        .select()
+        .eq('goal_id', goalId)
+        .eq('user_id', _userId);
+>>>>>>> upstream/main
     return rows.map(_fromRow).toList();
   }
 
   @override
   Future<List<Task>> getUngroupedTasks() async {
+<<<<<<< HEAD
     final rows = await _client.from('tasks').select().isFilter('goal_id', null);
+=======
+    final rows = await _client
+        .from('tasks')
+        .select()
+        .eq('user_id', _userId)
+        .isFilter('goal_id', null);
+>>>>>>> upstream/main
     return rows.map(_fromRow).toList();
   }
 
   @override
   Future<List<Task>> getIncompleteTasks() async {
+<<<<<<< HEAD
     final rows = await _client.from('tasks').select().inFilter('status', [
       'todo',
       'inProgress',
     ]);
+=======
+    final rows = await _client
+        .from('tasks')
+        .select()
+        .eq('user_id', _userId)
+        .inFilter('status', ['todo', 'inProgress']);
+>>>>>>> upstream/main
     return rows.map(_fromRow).toList();
   }
 
   @override
   Future<void> updateTask(Task task) async {
-    await _client.from('tasks').update(_toRow(task)).eq('id', task.id);
+    await _client
+        .from('tasks')
+        .update(_toRow(task))
+        .eq('id', task.id)
+        .eq('user_id', _userId);
   }
 
   @override
   Future<void> deleteTask(String id) async {
-    await _client.from('tasks').delete().eq('id', id);
+    await _client.from('tasks').delete().eq('id', id).eq('user_id', _userId);
   }
 
   @override
   Stream<List<Task>> watchTasksByGoalId(String goalId) {
+    // stream() only supports one .eq() filter, so we filter user_id in map
+    final userId = _userId;
     return _client
         .from('tasks')
         .stream(primaryKey: ['id'])
         .eq('goal_id', goalId)
-        .map((rows) => rows.map(_fromRow).toList());
+        .map((rows) => rows
+            .where((row) => row['user_id'] == userId)
+            .map(_fromRow)
+            .toList());
   }
 
   @override
@@ -111,9 +155,15 @@ class SupabaseTaskRepository implements TaskRepository {
     return _client
         .from('tasks')
         .stream(primaryKey: ['id'])
+<<<<<<< HEAD
         .map(
           (rows) => rows.map(_fromRow).where((t) => t.goalId == null).toList(),
         );
+=======
+        .eq('user_id', _userId)
+        .map((rows) =>
+            rows.map(_fromRow).where((t) => t.goalId == null).toList());
+>>>>>>> upstream/main
   }
 
   @override
@@ -121,6 +171,10 @@ class SupabaseTaskRepository implements TaskRepository {
     return _client
         .from('tasks')
         .stream(primaryKey: ['id'])
+<<<<<<< HEAD
+=======
+        .eq('user_id', _userId)
+>>>>>>> upstream/main
         .map((rows) => rows.map(_fromRow).toList());
   }
 }

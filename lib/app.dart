@@ -16,7 +16,6 @@ import 'features/goals/screens/goal_form_screen.dart';
 import 'features/goals/screens/goals_screen.dart';
 import 'features/goals/screens/task_form_screen.dart';
 import 'features/lock/screens/lock_screen.dart';
-import 'features/lock/screens/lock_setup_screen.dart';
 import 'features/onboarding/screen/welcome_screen.dart';
 import 'features/recommender/screens/recommender_screen.dart';
 
@@ -97,11 +96,6 @@ final router = GoRouter(
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: GoalsScreen()),
         ),
-        GoRoute(
-          path: '/lock/setup',
-          pageBuilder: (context, state) =>
-              const NoTransitionPage(child: LockSetupScreen()),
-        ),
       ],
     ),
     GoRoute(
@@ -165,6 +159,7 @@ class TaskSchedulerApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'Task Scheduler',
+      debugShowCheckedModeBanner: false,
       theme: theme,
       darkTheme: AppTheme.darkTheme,
       themeMode: selectedTheme == MoodTheme.night
@@ -222,6 +217,7 @@ class AppShell extends StatelessWidget {
     }
 
     return Scaffold(
+<<<<<<< HEAD
       extendBody: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Stack(
@@ -230,6 +226,33 @@ class AppShell extends StatelessWidget {
           if (!isGamingPage) const SeasonalBackground(),
           child,
           if (!isGamingPage) const SeasonalForegroundSnow(),
+=======
+      body: child,
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _calculateSelectedIndex(context),
+        onDestinationSelected: (index) => _onItemTapped(index, context),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.gamepad_outlined),
+            selectedIcon: Icon(Icons.gamepad),
+            label: 'Gaming',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.calendar_month_outlined),
+            selectedIcon: Icon(Icons.calendar_month),
+            label: 'My Calendar',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.flag_outlined),
+            selectedIcon: Icon(Icons.flag),
+            label: 'My Goals',
+          ),
+>>>>>>> upstream/main
         ],
       ),
       bottomNavigationBar: bottomNav,
@@ -243,7 +266,6 @@ class AppShell extends StatelessWidget {
     if (location.startsWith('/gaming')) return 1;
     if (location.startsWith('/calendar')) return 2;
     if (location.startsWith('/goals')) return 3;
-    if (location.startsWith('/lock')) return 4;
 
     return 0;
   }
@@ -261,10 +283,13 @@ class AppShell extends StatelessWidget {
         break;
       case 3:
         context.go('/goals');
+<<<<<<< HEAD
         break;
       case 4:
         context.go('/lock/setup');
         break;
+=======
+>>>>>>> upstream/main
     }
   }
 }

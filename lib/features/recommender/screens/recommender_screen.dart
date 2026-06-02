@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/models/enums.dart';
-import '../../../core/models/task.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme/theme_controller.dart';
+<<<<<<< HEAD
 import '../../../core/widgets/effort_indicator.dart';
 import '../../../core/widgets/priority_badge.dart';
 import '../../../core/widgets/seasonal_background.dart';
+=======
+import '../../../core/widgets/assistant_chat_sheet.dart';
+import '../../lock/providers/lock_provider.dart';
+>>>>>>> upstream/main
 import '../providers/recommender_provider.dart';
 
 final rewardBalanceProvider = FutureProvider<int>((ref) async {
@@ -23,18 +26,23 @@ class RecommenderScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tasksAsync = ref.watch(allTasksProvider);
-    final recommended = ref.watch(recommendedTaskProvider);
     final balanceAsync = ref.watch(rewardBalanceProvider);
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
+<<<<<<< HEAD
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Home'),
         centerTitle: true,
         backgroundColor: colorScheme.surface.withValues(alpha: 0.72),
+=======
+      appBar: AppBar(
+        title: const Text('Home'),
+        centerTitle: true,
+>>>>>>> upstream/main
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
         leading: IconButton(
@@ -96,6 +104,7 @@ class RecommenderScreen extends ConsumerWidget {
 
                             const SizedBox(height: 8),
 
+<<<<<<< HEAD
                             recommended == null
                                 ? const _NoRecommendationCard()
                                 : _RecommendedTaskCard(
@@ -116,42 +125,13 @@ class RecommenderScreen extends ConsumerWidget {
                                       final repo = ref.read(
                                         taskRepositoryProvider,
                                       );
+=======
+                            const _AssistantChatCard(),
 
-                                      await repo.updateTask(
-                                        recommended.copyWith(
-                                          status: TaskStatus.inProgress,
-                                          updatedAt: DateTime.now(),
-                                        ),
-                                      );
+                            const SizedBox(height: 8),
+>>>>>>> upstream/main
 
-                                      ref.invalidate(allTasksProvider);
-                                      ref.invalidate(recommendedTaskProvider);
-
-                                      if (!context.mounted) return;
-
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Started "${recommended.name}"',
-                                          ),
-                                        ),
-                                      );
-
-                                      context.go('/goals');
-                                    },
-                                    onDone: () async {
-                                      await _markTaskDoneAndGrantRewards(
-                                        ref,
-                                        recommended,
-                                      );
-
-                                      ref.invalidate(allTasksProvider);
-                                      ref.invalidate(recommendedTaskProvider);
-                                      ref.invalidate(rewardBalanceProvider);
-                                    },
-                                  ),
+                            const _FocusCard(),
                           ],
                         ),
                       ),
@@ -166,6 +146,7 @@ class RecommenderScreen extends ConsumerWidget {
     );
   }
 
+<<<<<<< HEAD
   Future<void> _markTaskDoneAndGrantRewards(WidgetRef ref, Task task) async {
     final taskRepo = ref.read(taskRepositoryProvider);
     final rewardService = ref.read(rewardServiceProvider);
@@ -224,6 +205,9 @@ class RecommenderScreen extends ConsumerWidget {
   }
 
   void _showThemePicker(BuildContext context, WidgetRef ref) {
+=======
+  void _showThemePicker(BuildContext context) {
+>>>>>>> upstream/main
     showModalBottomSheet(
       context: context,
       useRootNavigator: true,
@@ -370,6 +354,7 @@ class _RewardsSection extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
+<<<<<<< HEAD
       child: SnowCapped(
         borderRadius: 18,
         snowHeight: 10,
@@ -399,6 +384,41 @@ class _RewardsSection extends StatelessWidget {
                         Icons.emoji_events,
                         size: 20,
                         color: colorScheme.onPrimary,
+=======
+      child: Card(
+        color: colorScheme.surfaceContainerHighest,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.emoji_events,
+                      size: 20,
+                      color: colorScheme.onPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Rewards',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.w800,
+>>>>>>> upstream/main
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -504,14 +524,46 @@ class _RewardStat extends StatelessWidget {
   }
 }
 
-class _NoRecommendationCard extends StatelessWidget {
-  const _NoRecommendationCard();
+/// The Home page's primary entry into the AI assistant: a small hero that
+/// surfaces one-tap suggestions (each auto-sends into the chat, driving the
+/// deterministic recommender) plus an "ask anything" affordance. All paths
+/// open the shared [AssistantChatSheet].
+class _AssistantChatCard extends StatelessWidget {
+  const _AssistantChatCard();
+
+  static const _suggestions = <_Suggestion>[
+    _Suggestion(
+      label: 'What should I do now?',
+      icon: Icons.bolt_outlined,
+      prompt: 'What should I work on right now?',
+    ),
+    _Suggestion(
+      label: 'I have 30 min',
+      icon: Icons.timer_outlined,
+      prompt: 'What should I work on? I have 30 minutes.',
+    ),
+    _Suggestion(
+      label: 'Plan my day',
+      icon: Icons.event_note_outlined,
+      prompt: 'Help me plan my day around my tasks.',
+    ),
+  ];
+
+  void _openChat(BuildContext context, {String? prompt}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => AssistantChatSheet(initialPrompt: prompt),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+<<<<<<< HEAD
     return SnowCapped(
       borderRadius: 18,
       snowHeight: 10,
@@ -709,40 +761,293 @@ class _RecommendedTaskCard extends StatelessWidget {
                         onPressed: onDone,
                       ),
                     ),
+=======
+    return Card(
+      color: colorScheme.surfaceContainerHighest,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.auto_awesome,
+                    size: 20,
+                    color: colorScheme.onPrimary,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Your assistant',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        'Quick picks, or ask your own',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+>>>>>>> upstream/main
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final suggestion in _suggestions)
+                  _SuggestionChip(
+                    suggestion: suggestion,
+                    onTap: () => _openChat(context, prompt: suggestion.prompt),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Material(
+              color: colorScheme.surface.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(14),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: () => _openChat(context),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.chat_bubble_outline,
+                        size: 18,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Ask anything…',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward,
+                        size: 18,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
-      ],
+      ),
     );
   }
 }
 
+<<<<<<< HEAD
 class _RewardPreviewChip extends StatelessWidget {
   const _RewardPreviewChip({required this.task});
+=======
+class _Suggestion {
+  const _Suggestion({
+    required this.label,
+    required this.icon,
+    required this.prompt,
+  });
+>>>>>>> upstream/main
 
-  final Task task;
+  final String label;
+  final IconData icon;
+  final String prompt;
+}
+
+class _SuggestionChip extends StatelessWidget {
+  const _SuggestionChip({required this.suggestion, required this.onTap});
+
+  final _Suggestion suggestion;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Chip(
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      avatar: Icon(
-        Icons.monetization_on_outlined,
-        size: 16,
-        color: colorScheme.onTertiaryContainer,
+    return Material(
+      color: colorScheme.surface,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(suggestion.icon, size: 16, color: colorScheme.primary),
+              const SizedBox(width: 6),
+              Text(
+                suggestion.label,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      backgroundColor: colorScheme.tertiaryContainer,
-      labelStyle: theme.textTheme.labelMedium?.copyWith(
-        color: colorScheme.onTertiaryContainer,
+    );
+  }
+}
+
+/// Focus mode entry on the Home page: pick a duration inline, then lock the
+/// phone for that long. Drives the existing [lockProvider] and the `/lock`
+/// countdown screen — replaces the old standalone Lock tab.
+class _FocusCard extends ConsumerStatefulWidget {
+  const _FocusCard();
+
+  @override
+  ConsumerState<_FocusCard> createState() => _FocusCardState();
+}
+
+class _FocusCardState extends ConsumerState<_FocusCard> {
+  Duration _selected = const Duration(minutes: 25);
+
+  static const _options = [
+    (label: '5 min', duration: Duration(minutes: 5)),
+    (label: '15 min', duration: Duration(minutes: 15)),
+    (label: '25 min', duration: Duration(minutes: 25)),
+    (label: '45 min', duration: Duration(minutes: 45)),
+    (label: '1 hour', duration: Duration(hours: 1)),
+  ];
+
+  void _lockNow() {
+    ref.read(lockProvider.notifier).lock(_selected);
+    context.go('/lock');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      color: colorScheme.surfaceContainerHighest,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
       ),
-      label: Text('${task.rewardCoins} coins'),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.lock_clock,
+                    size: 20,
+                    color: colorScheme.onPrimary,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ready to focus?',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        'Lock your phone for a set time',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final opt in _options)
+                  ChoiceChip(
+                    label: Text(opt.label),
+                    selected: opt.duration == _selected,
+                    onSelected: (_) =>
+                        setState(() => _selected = opt.duration),
+                    showCheckmark: false,
+                    backgroundColor: colorScheme.surface.withValues(alpha: 0.7),
+                    selectedColor: colorScheme.primary,
+                    labelStyle: theme.textTheme.labelLarge?.copyWith(
+                      color: opt.duration == _selected
+                          ? colorScheme.onPrimary
+                          : colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    side: BorderSide(color: colorScheme.outlineVariant),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _lockNow,
+                icon: const Icon(Icons.lock),
+                label: const Text('Lock phone now'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/models/enums.dart';
+import '../../../core/models/task.dart';
 import '../../../core/providers.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../providers/goals_provider.dart';
@@ -141,7 +142,7 @@ class GoalsScreen extends ConsumerWidget {
     ref.read(taskRepositoryProvider).deleteTask(taskId);
   }
 
-  Future<void> _updateTaskStatus(WidgetRef ref, task, TaskStatus status) async {
+  Future<void> _updateTaskStatus(WidgetRef ref, Task task, TaskStatus status) async {
     final now = DateTime.now();
     if (status == TaskStatus.done && !task.gotRewards) {
       await ref.read(rewardServiceProvider).grantTaskReward(task);

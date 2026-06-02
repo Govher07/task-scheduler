@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rive/rive.dart' hide Image, LinearGradient;
 import '../../../core/providers.dart';
 
 // ── Shared colors ─────────────────────────────────────────────────────────────
@@ -163,12 +165,16 @@ class _GamingScreenState extends ConsumerState<GamingScreen> {
               child: GestureDetector(
                 onTap: () => _openSlotPicker(slotType),
                 child: item != null
+<<<<<<< HEAD
                     ? Image.asset(
                         item.asset,
                         width: size,
                         height: size,
                         fit: BoxFit.contain,
                       )
+=======
+                    ? _SlotItemDisplay(item: item, size: size)
+>>>>>>> upstream/main
                     : _EmptySlot(size: size),
               ),
             );
@@ -250,6 +256,80 @@ class _EmptySlot extends StatelessWidget {
         Icons.add,
         color: Colors.white.withValues(alpha: 0.5),
         size: size * 0.35,
+      ),
+    );
+  }
+}
+
+// ── Slot item display (image or Rive animation) ───────────────────────────────
+class _SlotItemDisplay extends StatelessWidget {
+  final _Item item;
+  final double size;
+  const _SlotItemDisplay({required this.item, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    if (item.name == 'Maid Mia') {
+      return _MaidAnimWidget(size: size);
+    }
+    return Image.asset(item.asset, width: size, height: size, fit: BoxFit.contain);
+  }
+}
+
+class _MaidAnimWidget extends StatefulWidget {
+  final double size;
+  const _MaidAnimWidget({required this.size});
+
+  @override
+  State<_MaidAnimWidget> createState() => _MaidAnimWidgetState();
+}
+
+class _MaidAnimWidgetState extends State<_MaidAnimWidget> {
+  static const _assets = [
+    'assets/maid/waving.riv',
+    'assets/maid/sideways.riv',
+  ];
+  static const _scales = [0.75, 1.3]; // waving 較小, sideways 較大
+  static const _switchInterval = Duration(seconds: 5);
+
+  int _index = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(_switchInterval, (_) {
+      if (mounted) setState(() => _index = (_index + 1) % _assets.length);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: widget.size,
+      height: widget.size,
+      child: Transform.scale(
+        scale: _scales[_index],
+        child: RiveWidgetBuilder(
+          key: ValueKey(_assets[_index]),
+          fileLoader: FileLoader.fromAsset(
+            _assets[_index],
+            riveFactory: Factory.rive,
+          ),
+          builder: (context, state) => switch (state) {
+            RiveLoaded() => RiveWidget(
+                controller: state.controller,
+                fit: Fit.contain,
+              ),
+            _ => const SizedBox.expand(),
+          },
+        ),
       ),
     );
   }

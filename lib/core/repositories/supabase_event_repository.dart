@@ -7,6 +7,8 @@ class SupabaseEventRepository implements EventRepository {
 
   SupabaseEventRepository(this._client);
 
+  String get _userId => _client.auth.currentUser!.id;
+
   Event _fromRow(Map<String, dynamic> row) {
     return Event(
       id: row['id'] as String,
@@ -16,6 +18,7 @@ class SupabaseEventRepository implements EventRepository {
       endTime: DateTime.parse(row['end_time'] as String),
       isRepeating: row['is_repeating'] as bool,
       recurrenceRule: row['recurrence_rule'] as String?,
+      isDone: row['is_done'] as bool? ?? false,
       createdAt: DateTime.parse(row['created_at'] as String),
       updatedAt: DateTime.parse(row['updated_at'] as String),
     );
@@ -30,6 +33,8 @@ class SupabaseEventRepository implements EventRepository {
       'end_time': event.endTime.toIso8601String(),
       'is_repeating': event.isRepeating,
       'recurrence_rule': event.recurrenceRule,
+      // 'is_done': event.isDone, // TODO: Uncomment after running ALTER TABLE events ADD COLUMN is_done BOOLEAN DEFAULT false; in Supabase
+      'user_id': _userId,
       'created_at': event.createdAt.toIso8601String(),
       'updated_at': event.updatedAt.toIso8601String(),
     };
@@ -46,13 +51,17 @@ class SupabaseEventRepository implements EventRepository {
         .from('events')
         .select()
         .eq('id', id)
+<<<<<<< HEAD
+=======
+        .eq('user_id', _userId)
+>>>>>>> upstream/main
         .maybeSingle();
     return row == null ? null : _fromRow(row);
   }
 
   @override
   Future<List<Event>> getAllEvents() async {
-    final rows = await _client.from('events').select();
+    final rows = await _client.from('events').select().eq('user_id', _userId);
     return rows.map(_fromRow).toList();
   }
 
@@ -61,6 +70,7 @@ class SupabaseEventRepository implements EventRepository {
     final rows = await _client
         .from('events')
         .select()
+        .eq('user_id', _userId)
         .gte('start_time', start.toIso8601String())
         .lt('start_time', end.toIso8601String());
     return rows.map(_fromRow).toList();
@@ -75,12 +85,16 @@ class SupabaseEventRepository implements EventRepository {
 
   @override
   Future<void> updateEvent(Event event) async {
-    await _client.from('events').update(_toRow(event)).eq('id', event.id);
+    await _client
+        .from('events')
+        .update(_toRow(event))
+        .eq('id', event.id)
+        .eq('user_id', _userId);
   }
 
   @override
   Future<void> deleteEvent(String id) async {
-    await _client.from('events').delete().eq('id', id);
+    await _client.from('events').delete().eq('id', id).eq('user_id', _userId);
   }
 
   @override
@@ -92,6 +106,7 @@ class SupabaseEventRepository implements EventRepository {
 
   @override
   Stream<List<Event>> watchEventsByDateRange(DateTime start, DateTime end) {
+<<<<<<< HEAD
     return _client
         .from('events')
         .stream(primaryKey: ['id'])
@@ -104,5 +119,27 @@ class SupabaseEventRepository implements EventRepository {
               )
               .toList(),
         );
+=======
+    // stream() only supports one .eq() filter, so we filter user_id and date range in map
+    final userId = _userId;
+    return _client
+        .from('events')
+        .stream(primaryKey: ['id'])
+        .eq('user_id', userId)
+        .map((rows) => rows
+            .map(_fromRow)
+            .where((e) =>
+                !e.startTime.isBefore(start) && e.startTime.isBefore(end))
+            .toList());
+  }
+
+  @override
+  Stream<List<Event>> watchAllRepeatingEvents() {
+    return _client
+        .from('events')
+        .stream(primaryKey: ['id'])
+        .eq('user_id', _userId)
+        .map((rows) => rows.map(_fromRow).where((e) => e.isRepeating).toList());
+>>>>>>> upstream/main
   }
 }

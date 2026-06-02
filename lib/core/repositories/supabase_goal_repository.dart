@@ -8,6 +8,8 @@ class SupabaseGoalRepository implements GoalRepository {
 
   SupabaseGoalRepository(this._client);
 
+  String get _userId => _client.auth.currentUser!.id;
+
   Goal _fromRow(Map<String, dynamic> row) {
     return Goal(
       id: row['id'] as String,
@@ -50,24 +52,37 @@ class SupabaseGoalRepository implements GoalRepository {
 
   @override
   Future<Goal?> getGoalById(String id) async {
+<<<<<<< HEAD
     final row = await _client.from('goals').select().eq('id', id).maybeSingle();
+=======
+    final row = await _client
+        .from('goals')
+        .select()
+        .eq('id', id)
+        .eq('user_id', _userId)
+        .maybeSingle();
+>>>>>>> upstream/main
     return row == null ? null : _fromRow(row);
   }
 
   @override
   Future<List<Goal>> getAllGoals() async {
-    final rows = await _client.from('goals').select();
+    final rows = await _client.from('goals').select().eq('user_id', _userId);
     return rows.map(_fromRow).toList();
   }
 
   @override
   Future<void> updateGoal(Goal goal) async {
-    await _client.from('goals').update(_toRow(goal)).eq('id', goal.id);
+    await _client
+        .from('goals')
+        .update(_toRow(goal))
+        .eq('id', goal.id)
+        .eq('user_id', _userId);
   }
 
   @override
   Future<void> deleteGoal(String id) async {
-    await _client.from('goals').delete().eq('id', id);
+    await _client.from('goals').delete().eq('id', id).eq('user_id', _userId);
   }
 
   @override
@@ -75,6 +90,10 @@ class SupabaseGoalRepository implements GoalRepository {
     return _client
         .from('goals')
         .stream(primaryKey: ['id'])
+<<<<<<< HEAD
+=======
+        .eq('user_id', _userId)
+>>>>>>> upstream/main
         .map((rows) => rows.map(_fromRow).toList());
   }
 }
