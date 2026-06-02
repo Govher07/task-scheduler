@@ -13,9 +13,7 @@ import '../../../core/widgets/priority_badge.dart';
 import '../../../core/widgets/seasonal_background.dart';
 import '../providers/recommender_provider.dart';
 
-final rewardBalanceProvider = FutureProvider<int>((ref) async {
-  return ref.watch(rewardServiceProvider).getBalance();
-});
+
 
 class RecommenderScreen extends ConsumerWidget {
   const RecommenderScreen({super.key});

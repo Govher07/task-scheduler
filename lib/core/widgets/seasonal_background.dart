@@ -219,7 +219,11 @@ class _WinterWeatherPainter extends CustomPainter {
 
     final paint = Paint()
       ..shader = const LinearGradient(
-        colors: [Color(0xFF8FBAD4), Color(0xFFBFD7EA), Color(0xFFE6F0F8)],
+        colors: [
+          Color(0xFF8FBAD4),
+          Color(0xFFBFD7EA),
+          Color(0xFFE6F0F8),
+        ],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
       ).createShader(rect);
@@ -267,9 +271,9 @@ class _WinterWeatherPainter extends CustomPainter {
           0.55 + 0.45 * math.sin((progress + glow.phase) * math.pi * 2);
 
       final paint = Paint()
-        ..color = const Color(
-          0xFF38BDF8,
-        ).withValues(alpha: glow.opacity * pulse)
+        ..color = const Color(0xFF38BDF8).withValues(
+          alpha: glow.opacity * pulse,
+        )
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22);
 
       canvas.drawCircle(
@@ -295,9 +299,9 @@ class _WinterWeatherPainter extends CustomPainter {
       if (isForeground) {
         final shadowPaint = Paint()
           ..style = PaintingStyle.fill
-          ..color = const Color(
-            0xFF0284C7,
-          ).withValues(alpha: particle.opacity * 0.12)
+          ..color = const Color(0xFF0284C7).withValues(
+            alpha: particle.opacity * 0.12,
+          )
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5);
 
         canvas.drawCircle(
@@ -312,16 +316,19 @@ class _WinterWeatherPainter extends CustomPainter {
         ..color = Colors.white.withValues(alpha: particle.opacity);
 
       if (particle.blur > 0.5) {
-        snowPaint.maskFilter = MaskFilter.blur(BlurStyle.normal, particle.blur);
+        snowPaint.maskFilter = MaskFilter.blur(
+          BlurStyle.normal,
+          particle.blur,
+        );
       }
 
       canvas.drawCircle(center, particle.radius, snowPaint);
 
       final highlightPaint = Paint()
         ..style = PaintingStyle.fill
-        ..color = const Color(
-          0xFFE0F2FE,
-        ).withValues(alpha: particle.opacity * 0.35);
+        ..color = const Color(0xFFE0F2FE).withValues(
+          alpha: particle.opacity * 0.35,
+        );
 
       canvas.drawCircle(
         center.translate(-0.4, -0.4),
@@ -358,7 +365,9 @@ class _SpringBloomBackground extends StatelessWidget {
             ),
 
             // Soft white wash so text/cards stay readable.
-            Container(color: Colors.white.withValues(alpha: 0.42)),
+            Container(
+              color: Colors.white.withValues(alpha: 0.58),
+            ),
 
             // Soft pink overlay to keep the spring mood.
             DecoratedBox(
@@ -512,7 +521,10 @@ class SnowCappedCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
         ),
-        child: Padding(padding: padding, child: child),
+        child: Padding(
+          padding: padding,
+          child: child,
+        ),
       ),
     );
   }
@@ -590,7 +602,10 @@ class SnowCappedText extends ConsumerWidget {
 }
 
 class _SnowCapPainter extends CustomPainter {
-  const _SnowCapPainter({this.borderRadius = 18, this.opacity = 0.92});
+  const _SnowCapPainter({
+    this.borderRadius = 18,
+    this.opacity = 0.92,
+  });
 
   final double? borderRadius;
   final double? opacity;
@@ -642,7 +657,14 @@ class _SnowCapPainter extends CustomPainter {
         width * 0.22,
         height * 0.50,
       )
-      ..cubicTo(0, height * 0.70, edgeRadius * 0.25, 0, edgeRadius * 0.75, 0)
+      ..cubicTo(
+        0,
+        height * 0.70,
+        edgeRadius * 0.25,
+        0,
+        edgeRadius * 0.75,
+        0,
+      )
       ..close();
 
     canvas.drawPath(path.shift(const Offset(0, 1)), shadowPaint);
@@ -669,7 +691,11 @@ class _SnowCapPainter extends CustomPainter {
 
     for (final blob in blobs) {
       canvas.drawCircle(blob, blobRadius, blobPaint);
-      canvas.drawCircle(blob.translate(-0.5, -0.5), frostRadius, frostPaint);
+      canvas.drawCircle(
+        blob.translate(-0.5, -0.5),
+        frostRadius,
+        frostPaint,
+      );
     }
   }
 
